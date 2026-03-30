@@ -1,2 +1,0 @@
-num_episodes,accuracy,exact_match,mcq_accuracy,repair_coverage,repair_success_rate,num_changed_repairs,average_trajectory_length,average_input_tokens,average_output_tokens,retrieval_hit_usefulness_proxy,graph_num_nodes,graph_num_edges,training_data_size_by_role::single_agent,dataset_accuracy::unknown,dataset_count::unknown
-5,1.0,1.0,0.0,0.0,0.0,0,1.0,34.8,2.0,0.0,0,0,5,1.0,5
