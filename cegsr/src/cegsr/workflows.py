@@ -230,6 +230,10 @@ def repair_episodes(episodes_path: str, config_or_path: str | dict[str, Any], ou
         runtime,
         turn_threshold=config['repair'].get('turn_threshold', 0.45),
         subtrajectory_threshold=config['repair'].get('subtrajectory_threshold', 0.45),
+        require_verifier_issue=config['repair'].get('require_verifier_issue', True),
+        verifier_issue_threshold=config['repair'].get('verifier_issue_threshold', 0.6),
+        relax_on_failure=config['repair'].get('relax_on_failure', True),
+        failure_margin=config['repair'].get('failure_margin', 0.08),
     )
     episodes = load_episodes(episodes_path)
     repaired: list[EpisodeTrajectory] = []

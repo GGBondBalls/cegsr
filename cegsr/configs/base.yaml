@@ -53,6 +53,10 @@ credit:
 repair:
   turn_threshold: 0.55
   subtrajectory_threshold: 0.55
+  require_verifier_issue: true
+  verifier_issue_threshold: 0.6
+  relax_on_failure: true
+  failure_margin: 0.08
 
 experience:
   graph_dir: outputs/demo/graph

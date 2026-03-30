@@ -17,10 +17,23 @@ class SelectiveRepairEngine:
     4) re-run the downstream dependent suffix.
     """
 
-    def __init__(self, runtime, turn_threshold: float = 0.45, subtrajectory_threshold: float = 0.45) -> None:
+    def __init__(
+        self,
+        runtime,
+        turn_threshold: float = 0.45,
+        subtrajectory_threshold: float = 0.45,
+        require_verifier_issue: bool = True,
+        verifier_issue_threshold: float = 0.6,
+        relax_on_failure: bool = True,
+        failure_margin: float = 0.08,
+    ) -> None:
         self.runtime = runtime
         self.turn_threshold = turn_threshold
         self.subtrajectory_threshold = subtrajectory_threshold
+        self.require_verifier_issue = require_verifier_issue
+        self.verifier_issue_threshold = verifier_issue_threshold
+        self.relax_on_failure = relax_on_failure
+        self.failure_margin = failure_margin
         self.verifier = VerifierCreditSignal()
 
     def repair(self, episode: EpisodeTrajectory, use_retrieval: bool = False) -> EpisodeTrajectory:
@@ -28,6 +41,10 @@ class SelectiveRepairEngine:
             episode,
             turn_threshold=self.turn_threshold,
             subtrajectory_threshold=self.subtrajectory_threshold,
+            require_verifier_issue=self.require_verifier_issue,
+            verifier_issue_threshold=self.verifier_issue_threshold,
+            relax_on_failure=self.relax_on_failure,
+            failure_margin=self.failure_margin,
         )
         if not flagged:
             return episode

@@ -27,3 +27,12 @@ def test_fused_credit():
     fused = fuse_credit_records(ep, groups, weights={"outcome": 0.4, "verifier": 0.4, "dependency": 0.2})
     assert any(r.target_type == "turn" for r in fused)
     assert any(r.target_type == "role" for r in fused)
+
+
+def test_verifier_credit_does_not_copy_full_confidence_to_all_turns():
+    ep = build_episode()
+    records = VerifierCreditSignal().compute(ep)
+    turn_scores = {r.target_id: r.total for r in records if r.target_type == "turn"}
+    assert turn_scores["t3"] <= 0.9
+    assert turn_scores["t1"] < turn_scores["t3"]
+    assert turn_scores["t2"] < turn_scores["t3"]
