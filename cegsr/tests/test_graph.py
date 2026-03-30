@@ -6,7 +6,7 @@ from cegsr.credit.dependency_credit import DependencyCreditSignal
 from cegsr.credit.fusion import fuse_credit_records
 from cegsr.experience.builder import build_experience_graph_from_episodes
 from cegsr.experience.graph_store import GraphStore
-from cegsr.experience.retriever import ExperienceRetriever, LocalEmbedder
+from cegsr.experience.retriever import ExperienceRetriever, LocalEmbedder, question_overlap
 from cegsr.trajectories.schema import EpisodeTrajectory, TaskSample, AgentTurn, RepairRecord, ExperienceNode
 from cegsr.trajectories.segmentation import segment_episode
 
@@ -128,3 +128,8 @@ def test_retriever_excludes_same_sample_and_keeps_same_role_only():
         dataset_name="commonsense_qa",
     )
     assert [node.node_id for node in nodes] == ["usable"]
+
+
+def test_question_overlap_prefers_related_questions():
+    assert question_overlap("Where is a rug near the front door kept?", "Where would you keep a rug near your front door?") > 0
+    assert question_overlap("Where is a rug near the front door kept?", "How do plants make food?") == 0

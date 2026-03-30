@@ -49,6 +49,27 @@ def cosine(a: list[float], b: list[float]) -> float:
     return sum(a[i] * b[i] for i in range(size))
 
 
+_STOPWORDS = {
+    "a", "an", "and", "are", "as", "at", "be", "but", "by", "do", "for", "from", "how", "if", "in", "into",
+    "is", "it", "of", "on", "or", "that", "the", "their", "this", "to", "was", "what", "when", "where", "which",
+    "who", "why", "with", "would", "you", "your",
+}
+
+
+def _keyword_tokens(text: str) -> set[str]:
+    return {token for token in re.findall(r"\w+", text.lower()) if token not in _STOPWORDS and len(token) > 2}
+
+
+def question_overlap(query: str, source_question: str) -> float:
+    query_tokens = _keyword_tokens(query)
+    source_tokens = _keyword_tokens(source_question)
+    if not query_tokens or not source_tokens:
+        return 0.0
+    inter = len(query_tokens & source_tokens)
+    union = len(query_tokens | source_tokens)
+    return inter / max(1, union)
+
+
 def _node_embedding_text(node: ExperienceNode) -> str:
     source_question = str(node.meta.get("source_question", "")).strip()
     return f"role={node.role}\nquestion={source_question}\nresponse={node.text}"
@@ -66,6 +87,8 @@ class ExperienceRetriever:
         exclude_same_sample: bool = True,
         same_dataset_only: bool = True,
         min_similarity: float = 0.3,
+        question_overlap_weight: float = 0.2,
+        min_question_overlap: float = 0.0,
     ) -> None:
         self.graph_store = graph_store
         self.embedder = embedder
@@ -75,6 +98,8 @@ class ExperienceRetriever:
         self.exclude_same_sample = exclude_same_sample
         self.same_dataset_only = same_dataset_only
         self.min_similarity = min_similarity
+        self.question_overlap_weight = question_overlap_weight
+        self.min_question_overlap = min_question_overlap
 
     def retrieve(
         self,
@@ -90,6 +115,8 @@ class ExperienceRetriever:
         exclude_same_sample: bool | None = None,
         same_dataset_only: bool | None = None,
         min_similarity: float | None = None,
+        question_overlap_weight: float | None = None,
+        min_question_overlap: float | None = None,
     ) -> list[ExperienceNode]:
         top_k = self.top_k if top_k is None else top_k
         expand_neighbors = self.expand_neighbors if expand_neighbors is None else expand_neighbors
@@ -97,6 +124,8 @@ class ExperienceRetriever:
         exclude_same_sample = self.exclude_same_sample if exclude_same_sample is None else exclude_same_sample
         same_dataset_only = self.same_dataset_only if same_dataset_only is None else same_dataset_only
         min_similarity = self.min_similarity if min_similarity is None else min_similarity
+        question_overlap_weight = self.question_overlap_weight if question_overlap_weight is None else question_overlap_weight
+        min_question_overlap = self.min_question_overlap if min_question_overlap is None else min_question_overlap
         query_text = f"role={role}\ntask={task_type}\nquestion={query}\nhistory={' '.join(t.response for t in history[-2:])}"
         q = self.embedder.encode(query_text)
         candidates = []
@@ -117,7 +146,10 @@ class ExperienceRetriever:
             similarity = cosine(q, node.embedding)
             if similarity < min_similarity:
                 continue
-            score = similarity + 0.1 * float(node.credit)
+            overlap = question_overlap(query, str(node.meta.get("source_question", "")))
+            if overlap < min_question_overlap:
+                continue
+            score = similarity + question_overlap_weight * overlap + 0.1 * float(node.credit)
             candidates.append((score, node))
         top = [node for _, node in sorted(candidates, key=lambda x: x[0], reverse=True)[:top_k]]
         if not expand_neighbors:

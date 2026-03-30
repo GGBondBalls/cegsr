@@ -135,6 +135,8 @@ def build_system(config_or_path: str | dict[str, Any], use_graph: bool | None = 
                 exclude_same_sample=bool(retrieval_cfg.get('exclude_same_sample', True)),
                 same_dataset_only=bool(retrieval_cfg.get('same_dataset_only', True)),
                 min_similarity=float(retrieval_cfg.get('min_similarity', 0.3)),
+                question_overlap_weight=float(retrieval_cfg.get('question_overlap_weight', 0.2)),
+                min_question_overlap=float(retrieval_cfg.get('min_question_overlap', 0.0)),
             )
     runtime = AgentGraphRuntime(
         agents=agents,

@@ -65,6 +65,8 @@ experience:
     exclude_same_sample: true
     same_dataset_only: true
     min_similarity: 0.3
+    question_overlap_weight: 0.2
+    min_question_overlap: 0.02
     enabled_roles: [solver]
 
 training:
