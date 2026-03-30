@@ -1,0 +1,21 @@
+sample_id,dataset_name,pred,gold,question
+commonsenseqa_validation_0,commonsense_qa,E. hall,D. living room,Where would you keep a rug near your front door?
+commonsenseqa_validation_4,commonsense_qa,D. street corner,B. front door,"The town house went right to the curb, a slot effectively made a mailbox of the what?"
+commonsenseqa_validation_5,commonsense_qa,C. kitchen cupboard,B. table setting,Where is a salt shaker most often kept?
+commonsenseqa_validation_7,commonsense_qa,D. front door,C. own home,What would someone use a personal key for?
+commonsenseqa_validation_9,commonsense_qa,B. silence,D. stillness,"During the winter hunt he could hear every motion in the woods, this was because of the what of everything?"
+commonsenseqa_validation_11,commonsense_qa,B. found in ocean,C. water,Where is seaweed usually found alive?
+commonsenseqa_validation_12,commonsense_qa,D. countryside,C. forest,David watched some nesting birds using his binoculars while on vacation.  Where might David be?.
+commonsenseqa_validation_13,commonsense_qa,C. throwing,A. grab,What would you do to a rock when climb up a cliff?
+commonsenseqa_validation_19,commonsense_qa,B. unable,C. unlikely,"Steve thought that it was possible, but he agreed that it was what?"
+commonsenseqa_validation_20,commonsense_qa,D. walk,A. listen to radio,What would I be doing while going to work and walking?
+commonsenseqa_validation_23,commonsense_qa,B. stress,C. happiness,"If a person is using a computer to talk to their granddaughter, what might the computer cause for them?"
+commonsenseqa_validation_27,commonsense_qa,B. make larger,C. augment,"The surgeon's clients had begun to reduce, it seemed girls no longer want to what?"
+commonsenseqa_validation_29,commonsense_qa,C. prehistory,E. ancient times,When did mammoth's live?
+commonsenseqa_validation_33,commonsense_qa,A. open eyes,B. go to movies,To see new films you must?
+commonsenseqa_validation_34,commonsense_qa,E. direct sunlight,A. full sunlight,There was no shade for Jenny.  She was forced to lie there exposed to what?
+commonsenseqa_validation_39,commonsense_qa,E. pride,D. confident,He was beginning to regret taking the fight when he saw how what his opponent was?
+commonsenseqa_validation_45,commonsense_qa,B. better themselves,A. face problems,What do people need to do to change their lives?
+commonsenseqa_validation_46,commonsense_qa,C. laboratory,E. industrial area,"A loud machine is irritating, but many are expected where?"
+commonsenseqa_validation_50,commonsense_qa,C. being annoyed,A. frustration,"Sally was standing in queue.  The line was very, very slow.  What was she feeling?"
+commonsenseqa_validation_60,commonsense_qa,B. internet,D. library,Where is known to be a wealth of information?

@@ -1,0 +1,21 @@
+sample_id,dataset_name,pred,gold,question
+commonsenseqa_validation_0,commonsense_qa,E. hall,D. living room,Where would you keep a rug near your front door?
+commonsenseqa_validation_5,commonsense_qa,C. kitchen cupboard,B. table setting,Where is a salt shaker most often kept?
+commonsenseqa_validation_11,commonsense_qa,A. ocean,C. water,Where is seaweed usually found alive?
+commonsenseqa_validation_12,commonsense_qa,E. roof.,C. forest,David watched some nesting birds using his binoculars while on vacation.  Where might David be?.
+commonsenseqa_validation_20,commonsense_qa,D. walk,A. listen to radio,What would I be doing while going to work and walking?
+commonsenseqa_validation_23,commonsense_qa,B. stress,C. happiness,"If a person is using a computer to talk to their granddaughter, what might the computer cause for them?"
+commonsenseqa_validation_27,commonsense_qa,D. gain weight,C. augment,"The surgeon's clients had begun to reduce, it seemed girls no longer want to what?"
+commonsenseqa_validation_29,commonsense_qa,D. prehistoric times,E. ancient times,When did mammoth's live?
+commonsenseqa_validation_33,commonsense_qa,A. open eyes,B. go to movies,To see new films you must?
+commonsenseqa_validation_34,commonsense_qa,E. direct sunlight,A. full sunlight,There was no shade for Jenny.  She was forced to lie there exposed to what?
+commonsenseqa_validation_39,commonsense_qa,E. pride,D. confident,He was beginning to regret taking the fight when he saw how what his opponent was?
+commonsenseqa_validation_43,commonsense_qa,C. winch,D. construction site,A crane uses many a steel cable when working a what?
+commonsenseqa_validation_45,commonsense_qa,B. better themselves,A. face problems,What do people need to do to change their lives?
+commonsenseqa_validation_60,commonsense_qa,B. internet,D. library,Where is known to be a wealth of information?
+commonsenseqa_validation_62,commonsense_qa,E. murdered by a landshark.,B. see beautiful views,"Nature can be good and bad for the person who walks, what are some things?"
+commonsenseqa_validation_65,commonsense_qa,E. Connecticut,B. new england,"There was a toll road that meandered from Maine to New Hampshire, where was it?"
+commonsenseqa_validation_75,commonsense_qa,E. staying in place,D. transporting,What is the process of going somewhere?
+commonsenseqa_validation_79,commonsense_qa,A. England.,B. new hampshire,John was an aristocratic fox hunter.  Where might he live?
+commonsenseqa_validation_82,commonsense_qa,B. count to ten,D. state name,What do you ask a child to do when you first meet her?
+commonsenseqa_validation_86,commonsense_qa,A. gap,B. shopping mall,Where can you buy jeans at one of may indoor merchants?

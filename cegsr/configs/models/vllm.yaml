@@ -1,0 +1,7 @@
+backend:
+  kind: vllm
+  model: /path/or/model-id
+  base_url: ${VLLM_BASE_URL}
+  api_key: ${VLLM_API_KEY}
+  extra_body:
+    top_k: 40

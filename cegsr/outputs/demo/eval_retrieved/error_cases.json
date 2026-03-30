@@ -1,0 +1,142 @@
+[
+  {
+    "sample_id": "commonsenseqa_validation_0",
+    "dataset_name": "commonsense_qa",
+    "pred": "E. hall",
+    "gold": "D. living room",
+    "question": "Where would you keep a rug near your front door?"
+  },
+  {
+    "sample_id": "commonsenseqa_validation_1",
+    "dataset_name": "commonsense_qa",
+    "pred": "C. cave",
+    "gold": "D. cabinet",
+    "question": "Danny found an old film in a sealed what?"
+  },
+  {
+    "sample_id": "commonsenseqa_validation_5",
+    "dataset_name": "commonsense_qa",
+    "pred": "C. kitchen cupboard",
+    "gold": "B. table setting",
+    "question": "Where is a salt shaker most often kept?"
+  },
+  {
+    "sample_id": "commonsenseqa_validation_9",
+    "dataset_name": "commonsense_qa",
+    "pred": "C. stationary",
+    "gold": "D. stillness",
+    "question": "During the winter hunt he could hear every motion in the woods, this was because of the what of everything?"
+  },
+  {
+    "sample_id": "commonsenseqa_validation_11",
+    "dataset_name": "commonsense_qa",
+    "pred": "A. ocean",
+    "gold": "C. water",
+    "question": "Where is seaweed usually found alive?"
+  },
+  {
+    "sample_id": "commonsenseqa_validation_13",
+    "dataset_name": "commonsense_qa",
+    "pred": "E. may fall",
+    "gold": "A. grab",
+    "question": "What would you do to a rock when climb up a cliff?"
+  },
+  {
+    "sample_id": "commonsenseqa_validation_20",
+    "dataset_name": "commonsense_qa",
+    "pred": "D. walk",
+    "gold": "A. listen to radio",
+    "question": "What would I be doing while going to work and walking?"
+  },
+  {
+    "sample_id": "commonsenseqa_validation_23",
+    "dataset_name": "commonsense_qa",
+    "pred": "B. Stress",
+    "gold": "C. happiness",
+    "question": "If a person is using a computer to talk to their granddaughter, what might the computer cause for them?"
+  },
+  {
+    "sample_id": "commonsenseqa_validation_24",
+    "dataset_name": "commonsense_qa",
+    "pred": "B. fight",
+    "gold": "C. annoyance",
+    "question": "What would it be if they get a surprising show over and over?"
+  },
+  {
+    "sample_id": "commonsenseqa_validation_27",
+    "dataset_name": "commonsense_qa",
+    "pred": "B. make larger",
+    "gold": "C. augment",
+    "question": "The surgeon's clients had begun to reduce, it seemed girls no longer want to what?"
+  },
+  {
+    "sample_id": "commonsenseqa_validation_28",
+    "dataset_name": "commonsense_qa",
+    "pred": "E. hurt feelings",
+    "gold": "C. resentment",
+    "question": "What does a person often feel about someone judging them guilty?"
+  },
+  {
+    "sample_id": "commonsenseqa_validation_29",
+    "dataset_name": "commonsense_qa",
+    "pred": "D. prehistoric times",
+    "gold": "E. ancient times",
+    "question": "When did mammoth's live?"
+  },
+  {
+    "sample_id": "commonsenseqa_validation_30",
+    "dataset_name": "commonsense_qa",
+    "pred": "C. Life on Earth",
+    "gold": "B. heat",
+    "question": "John knew that the sun produced a massive amount of energy in two forms.  If you were on the surface of the sun, what would kill you first?"
+  },
+  {
+    "sample_id": "commonsenseqa_validation_34",
+    "dataset_name": "commonsense_qa",
+    "pred": "E. direct sunlight",
+    "gold": "A. full sunlight",
+    "question": "There was no shade for Jenny.  She was forced to lie there exposed to what?"
+  },
+  {
+    "sample_id": "commonsenseqa_validation_37",
+    "dataset_name": "commonsense_qa",
+    "pred": "B. see other people",
+    "gold": "A. buy food",
+    "question": "What do you do when you're going to market?"
+  },
+  {
+    "sample_id": "commonsenseqa_validation_39",
+    "dataset_name": "commonsense_qa",
+    "pred": "C. satisfaction",
+    "gold": "D. confident",
+    "question": "He was beginning to regret taking the fight when he saw how what his opponent was?"
+  },
+  {
+    "sample_id": "commonsenseqa_validation_43",
+    "dataset_name": "commonsense_qa",
+    "pred": "B. ship",
+    "gold": "D. construction site",
+    "question": "A crane uses many a steel cable when working a what?"
+  },
+  {
+    "sample_id": "commonsenseqa_validation_45",
+    "dataset_name": "commonsense_qa",
+    "pred": "B. better themselves",
+    "gold": "A. face problems",
+    "question": "What do people need to do to change their lives?"
+  },
+  {
+    "sample_id": "commonsenseqa_validation_54",
+    "dataset_name": "commonsense_qa",
+    "pred": "E. Trunk",
+    "gold": "D. bloom",
+    "question": "Where do apples form on an apple tree?"
+  },
+  {
+    "sample_id": "commonsenseqa_validation_56",
+    "dataset_name": "commonsense_qa",
+    "pred": "B. start running",
+    "gold": "E. last several years",
+    "question": "If you take the risk buying a used car, you still hope it can what?"
+  }
+]

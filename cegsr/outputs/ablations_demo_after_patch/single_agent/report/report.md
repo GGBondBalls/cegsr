@@ -1,0 +1,22 @@
+# Run Summary
+
+## Aggregate Metrics
+- **num_episodes**: 5
+- **accuracy**: 1.0
+- **exact_match**: 1.0
+- **mcq_accuracy**: 0.0
+- **repair_coverage**: 0.0
+- **repair_success_rate**: 0.0
+- **num_changed_repairs**: 0
+- **average_trajectory_length**: 1.0
+- **average_input_tokens**: 34.8
+- **average_output_tokens**: 2.0
+- **retrieval_hit_usefulness_proxy**: 0.0
+- **graph_num_nodes**: 0
+- **graph_num_edges**: 0
+- **training_data_size_by_role::single_agent**: 5
+- **dataset_accuracy::unknown**: 1.0
+- **dataset_count::unknown**: 5
+
+## Dataset Breakdown
+- unknown: 1.0

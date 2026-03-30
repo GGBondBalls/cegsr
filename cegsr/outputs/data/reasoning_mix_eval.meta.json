@@ -1,0 +1,39 @@
+{
+  "output_path": "outputs\\data\\reasoning_mix_eval.jsonl",
+  "num_rows": 400,
+  "split": "validation",
+  "max_per_source": 100,
+  "seed": 42,
+  "sources": [
+    {
+      "dataset_name": "gsm8k",
+      "source_split": "test",
+      "num_rows": 0,
+      "status": "skipped: ValueError"
+    },
+    {
+      "dataset_name": "commonsense_qa",
+      "source_split": "validation",
+      "num_rows": 100,
+      "status": "ok"
+    },
+    {
+      "dataset_name": "ai2_arc",
+      "source_split": "validation",
+      "num_rows": 100,
+      "status": "ok"
+    },
+    {
+      "dataset_name": "boolq",
+      "source_split": "validation",
+      "num_rows": 100,
+      "status": "ok"
+    },
+    {
+      "dataset_name": "pubmed_qa",
+      "source_split": "train",
+      "num_rows": 100,
+      "status": "ok"
+    }
+  ]
+}

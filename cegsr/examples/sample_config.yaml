@@ -1,0 +1,27 @@
+project:
+  name: cegsr_real_eval
+  output_dir: outputs/example_real
+
+task:
+  task_type: qa
+  dataset_path: outputs/data/reasoning_mix_eval.jsonl
+
+backend:
+  kind: hf_local
+  model_name_or_path: /home/fyk/models/Qwen/Qwen2.5-X.XB-Instruct
+  model_size: 7B
+  device: auto
+  trust_remote_code: true
+  use_chat_template: true
+  load_kwargs:
+    torch_dtype: auto
+
+graph:
+  role_order: [planner, solver, verifier, summarizer]
+
+agents:
+  - role: planner
+  - role: solver
+  - role: verifier
+  - role: summarizer
+  - role: single_agent
