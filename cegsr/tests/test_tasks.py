@@ -88,3 +88,38 @@ def test_build_prompt_includes_repair_guidance_and_retrieval_caution():
     assert "Repair target: low credit on solver turn" in content
     assert "Preserved high-credit context" in content
     assert "reuse a snippet only if it clearly matches this question" in content
+
+
+def test_solver_prompt_sanitizes_retrieved_mcq_answers():
+    task = QATask()
+    sample = TaskSample(
+        sample_id="mcq4",
+        question="Where would you keep a rug near your front door?",
+        answer="D. living room",
+        choices=["A. persia", "B. desk", "C. table", "D. living room", "E. hall"],
+        task_type="mmlu_style",
+    )
+    messages = task.build_prompt(
+        sample=sample,
+        role="solver",
+        retrieved_experience=[
+            ExperienceNode(
+                node_id="n2",
+                text="Answer: E. hall\n\nReasoning: Entryways often have runners and mats.",
+                role="solver",
+                task_type="qa",
+                credit=0.88,
+                source_episode_id="ep2",
+                source_turn_ids=["t2"],
+                meta={"source_question": "Where is a mat often placed?"},
+            )
+        ],
+        history=[],
+        system_prompt="system",
+        extra_context={},
+    )
+    content = messages[1]["content"]
+    assert "Do not copy retrieved answer options directly" in content
+    assert "reasoning pattern:" in content
+    assert "Answer: E. hall" not in content
+    assert "q=Where is a mat often placed?" in content

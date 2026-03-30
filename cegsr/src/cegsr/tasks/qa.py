@@ -16,6 +16,7 @@ class QATask(BaseTask):
         re.compile(r"^\s*([A-Z])[.)]\s*", re.I),
         re.compile(r"\(([A-Z])\)", re.I),
     )
+    _ANSWER_LINE_RE = re.compile(r"^\s*(?:final answer|answer|proposed answer|correct answer)\s*:\s*.+$", re.I)
 
     def _parse_choices(self, sample: TaskSample) -> dict[str, str]:
         parsed: dict[str, str] = {}
@@ -87,6 +88,19 @@ class QATask(BaseTask):
             return "This is a multiple-choice question. Restrict analysis to the listed options and do not invent new answers."
         return ""
 
+    def _format_retrieved_node(self, sample: TaskSample, role: str, node: Any) -> str:
+        prefix = "repaired" if getattr(node, "is_repaired", False) else "prior"
+        source_question = str(getattr(node, "meta", {}).get("source_question", "")).strip()
+        if sample.choices and role == "solver":
+            lines = [line.strip() for line in str(node.text).splitlines() if line.strip()]
+            stripped_lines = [line for line in lines if not self._ANSWER_LINE_RE.match(line)]
+            reasoning = " ".join(stripped_lines)[:160]
+            if not reasoning:
+                reasoning = "Use the prior case only as a reasoning pattern, not as an answer template."
+            question_part = f" | q={source_question[:80]}" if source_question else ""
+            return f"- [{node.role}|credit={node.credit:.2f}|{prefix}{question_part}] reasoning pattern: {reasoning}"
+        return f"- [{node.role}|credit={node.credit:.2f}|{prefix}] {str(node.text)[:160]}"
+
     def build_prompt(
         self,
         sample: TaskSample,
@@ -118,11 +132,12 @@ class QATask(BaseTask):
             snippets.append(
                 "Retrieved experience (high-credit hints only; reuse a snippet only if it clearly matches this question, choices, and current role):"
             )
-            for node in retrieved_experience:
-                prefix = "repaired" if getattr(node, "is_repaired", False) else "prior"
+            if sample.choices and role == "solver":
                 snippets.append(
-                    f"- [{node.role}|credit={node.credit:.2f}|{prefix}] {node.text[:160]}"
+                    "Do not copy retrieved answer options directly. Use them only as reasoning patterns and still decide from the current choices."
                 )
+            for node in retrieved_experience:
+                snippets.append(self._format_retrieved_node(sample, role, node))
         if sample.metadata.get("previous_failure"):
             snippets.append("Previous failed trajectory to learn from:")
             snippets.append(str(sample.metadata["previous_failure"])[:800])

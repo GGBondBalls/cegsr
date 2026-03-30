@@ -7,6 +7,10 @@ from cegsr.experience.retriever import LocalEmbedder, cosine
 from cegsr.trajectories.schema import EpisodeTrajectory, ExperienceEdge, ExperienceNode
 
 
+def _node_embedding_text(question: str, role: str, response: str) -> str:
+    return f"role={role}\nquestion={question}\nresponse={response}"
+
+
 def build_experience_graph_from_episodes(
     episodes: list[EpisodeTrajectory],
     graph_dir: str,
@@ -32,13 +36,14 @@ def build_experience_graph_from_episodes(
                 credit=credit,
                 source_episode_id=episode.episode_id,
                 source_turn_ids=[turn.turn_id],
-                embedding=embedder.encode(turn.response),
+                embedding=embedder.encode(_node_embedding_text(episode.sample.question, turn.role, turn.response)),
                 tags=[turn.role, episode.sample.task_type],
                 is_repaired=False,
                 meta={
                     "sample_id": episode.sample.sample_id,
                     "dataset_name": episode.sample.metadata.get("dataset_name"),
                     "category": episode.sample.metadata.get("category"),
+                    "source_question": episode.sample.question,
                 },
             )
             store.add_nodes([node])
@@ -93,13 +98,14 @@ def build_experience_graph_from_episodes(
                     credit=episode.metrics.get("accuracy", 0.0),
                     source_episode_id=episode.episode_id,
                     source_turn_ids=[repair.target_id],
-                    embedding=embedder.encode(new_text),
+                    embedding=embedder.encode(_node_embedding_text(episode.sample.question, repaired_role, new_text)),
                     tags=["repaired", episode.sample.task_type],
                     is_repaired=True,
                     meta={
                         "sample_id": episode.sample.sample_id,
                         "dataset_name": episode.sample.metadata.get("dataset_name"),
                         "category": episode.sample.metadata.get("category"),
+                        "source_question": episode.sample.question,
                     },
                 )
                 store.add_nodes([node])

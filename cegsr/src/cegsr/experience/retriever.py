@@ -49,6 +49,11 @@ def cosine(a: list[float], b: list[float]) -> float:
     return sum(a[i] * b[i] for i in range(size))
 
 
+def _node_embedding_text(node: ExperienceNode) -> str:
+    source_question = str(node.meta.get("source_question", "")).strip()
+    return f"role={node.role}\nquestion={source_question}\nresponse={node.text}"
+
+
 class ExperienceRetriever:
     def __init__(
         self,
@@ -108,7 +113,7 @@ class ExperienceRetriever:
             elif node.role not in {role, "summarizer", "solver"}:
                 continue
             if not node.embedding:
-                node.embedding = self.embedder.encode(node.text)
+                node.embedding = self.embedder.encode(_node_embedding_text(node))
             similarity = cosine(q, node.embedding)
             if similarity < min_similarity:
                 continue
