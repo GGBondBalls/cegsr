@@ -93,7 +93,6 @@ def _build_vllm_server_script(script_dir: Path, repo_root: Path, serving: dict[s
     ]
     optional_flags = {
         "--max-model-len": serving.get("max_model_len"),
-        "--swap-space": serving.get("swap_space"),
         "--max-num-seqs": serving.get("max_num_seqs"),
     }
     for flag, value in optional_flags.items():
@@ -138,6 +137,35 @@ def _build_prepare_data_script(script_dir: Path, repo_root: Path, prepare_config
     return "\n".join(lines) + "\n"
 
 
+def _build_inference_healthcheck_lines(config: dict[str, Any]) -> list[str]:
+    backend = config.get("backend", {})
+    kind = backend.get("kind")
+    if kind not in {"vllm", "sglang"}:
+        return []
+
+    base_url = str(backend.get("base_url", "")).rstrip("/")
+    if not base_url:
+        return []
+
+    models_url = f"{base_url}/models"
+    return [
+        'python - <<\'PY\'',
+        "import sys",
+        "import requests",
+        f"url = {models_url!r}",
+        "try:",
+        "    response = requests.get(url, timeout=5)",
+        "    response.raise_for_status()",
+        "except Exception as exc:",
+        '    print(f\"Inference server is not reachable: {url}\", file=sys.stderr)',
+        '    print(f\"Reason: {exc}\", file=sys.stderr)',
+        '    print(\"Start it first with: bash outputs/dual_4090/launch_inference_server.sh\", file=sys.stderr)',
+        "    raise SystemExit(1)",
+        "PY",
+        "",
+    ]
+
+
 def generate_experiment_scripts(config_path: str | Path, output_dir: str | None = None) -> dict[str, str]:
     config_file = Path(config_path).resolve()
     config = load_config(config_file)
@@ -167,6 +195,7 @@ def generate_experiment_scripts(config_path: str | Path, output_dir: str | None 
                 "",
             ]
         )
+    pipeline_lines.extend(_build_inference_healthcheck_lines(config))
     pipeline_lines.append(_quote_command(["python", "scripts/run_pipeline.py", "--config", config_ref]))
     pipeline_path = script_dir / "run_pipeline.sh"
     pipeline_path.write_text("\n".join(pipeline_lines) + "\n", encoding="utf-8")

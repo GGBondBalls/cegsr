@@ -25,7 +25,6 @@ serving:
   dtype: auto
   gpu_memory_utilization: 0.92
   max_model_len: 4096
-  swap_space: 8
   max_num_seqs: 16
 
 training:

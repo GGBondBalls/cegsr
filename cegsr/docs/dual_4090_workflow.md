@@ -77,6 +77,8 @@ Then start the inference server:
 bash outputs/dual_4090/launch_inference_server.sh
 ```
 
+Keep this process alive in a separate shell or `tmux` session. The pipeline talks to `http://127.0.0.1:8000/v1`, which means the inference service must be running on the same server before `run_pipeline.sh` starts.
+
 Then run the full experiment pipeline:
 
 ```bash
