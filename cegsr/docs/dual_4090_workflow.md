@@ -56,6 +56,7 @@ outputs/dual_4090/
 
 Generated files:
 
+- `prepare_data.sh`
 - `launch_inference_server.sh`
 - `run_pipeline.sh`
 - `run_ablation.sh`
@@ -63,6 +64,14 @@ Generated files:
 ## Recommended execution order
 
 Start the inference server first:
+
+If the evaluation dataset has not been built yet, run:
+
+```bash
+bash outputs/dual_4090/prepare_data.sh
+```
+
+Then start the inference server:
 
 ```bash
 bash outputs/dual_4090/launch_inference_server.sh

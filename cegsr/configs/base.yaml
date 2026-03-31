@@ -5,6 +5,7 @@ project:
 task:
   task_type: qa
   dataset_path: outputs/data/reasoning_mix_eval.jsonl
+  prepare_config: configs/datasets/reasoning_mix_eval.yaml
 
 backend:
   kind: hf_local

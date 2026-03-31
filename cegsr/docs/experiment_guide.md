@@ -79,6 +79,7 @@ For a dual-RTX4090 server, prefer the dedicated profile:
 
 ```bash
 python scripts/setup_experiment.py --config configs/profiles/dual_4090_vllm.yaml
+bash outputs/dual_4090/prepare_data.sh
 bash outputs/dual_4090/launch_inference_server.sh
 bash outputs/dual_4090/run_pipeline.sh
 bash outputs/dual_4090/training_data/run_llamafactory_ddp.sh

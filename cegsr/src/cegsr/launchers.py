@@ -25,11 +25,15 @@ def _quote_command(parts: list[Any]) -> str:
 
 
 def _script_header(script_dir: Path, repo_root: Path) -> list[str]:
-    root_target = os.path.relpath(repo_root, script_dir).replace("\\", "/")
+    try:
+        root_target = os.path.relpath(repo_root, script_dir).replace("\\", "/")
+        root_expr = f'$(dirname "${{BASH_SOURCE[0]}}")/{root_target}'
+    except ValueError:
+        root_expr = str(repo_root).replace("\\", "/")
     return [
         "#!/usr/bin/env bash",
         "set -euo pipefail",
-        f'ROOT_DIR="$(cd "$(dirname "${{BASH_SOURCE[0]}}")/{root_target}" && pwd)"',
+        f'ROOT_DIR="$(cd "{root_expr}" && pwd)"',
         'cd "$ROOT_DIR"',
         "",
     ]
@@ -50,10 +54,30 @@ def _build_vllm_server_script(script_dir: Path, repo_root: Path, serving: dict[s
 
     gpu_list = _normalize_gpu_list(serving.get("gpu_ids"))
     tensor_parallel_size = int(serving.get("tensor_parallel_size", max(1, len(gpu_list)) or 1))
-    command = [
+    model_ref = render_model_path_template(model_name_or_path, serving.get("model_size"))
+    serve_command = [
         "vllm",
         "serve",
-        render_model_path_template(model_name_or_path, serving.get("model_size")),
+        model_ref,
+        "--host",
+        serving.get("host", "127.0.0.1"),
+        "--port",
+        serving.get("port", 8000),
+        "--dtype",
+        serving.get("dtype", "auto"),
+        "--tensor-parallel-size",
+        tensor_parallel_size,
+        "--gpu-memory-utilization",
+        serving.get("gpu_memory_utilization", 0.9),
+        "--api-key",
+        serving.get("api_key", "EMPTY"),
+    ]
+    module_command = [
+        "python",
+        "-m",
+        "vllm.entrypoints.openai.api_server",
+        "--model",
+        model_ref,
         "--host",
         serving.get("host", "127.0.0.1"),
         "--port",
@@ -74,15 +98,43 @@ def _build_vllm_server_script(script_dir: Path, repo_root: Path, serving: dict[s
     }
     for flag, value in optional_flags.items():
         if value is not None:
-            command.extend([flag, value])
+            serve_command.extend([flag, value])
+            module_command.extend([flag, value])
     for item in serving.get("extra_args", []):
-        command.append(item)
+        serve_command.append(item)
+        module_command.append(item)
 
     lines = _script_header(script_dir, repo_root)
     if gpu_list:
         lines.append(f'export CUDA_VISIBLE_DEVICES="{",".join(gpu_list)}"')
         lines.append("")
-    lines.append(_quote_command(command))
+    lines.extend(
+        [
+            'if command -v vllm >/dev/null 2>&1; then',
+            f"  {_quote_command(serve_command)}",
+            'elif python -c "import vllm" >/dev/null 2>&1; then',
+            f"  {_quote_command(module_command)}",
+            "else",
+            '  echo "vLLM is not available in the current environment." >&2',
+            '  echo "Install it first, for example: pip install vllm" >&2',
+            "  exit 127",
+            "fi",
+        ]
+    )
+    return "\n".join(lines) + "\n"
+
+
+def _build_prepare_data_script(script_dir: Path, repo_root: Path, prepare_config: str | None) -> str:
+    lines = _script_header(script_dir, repo_root)
+    if prepare_config:
+        lines.append(_quote_command(["python", "scripts/prepare_data.py", "--config", prepare_config]))
+    else:
+        lines.extend(
+            [
+                'echo "No task.prepare_config is defined in the current config." >&2',
+                "exit 1",
+            ]
+        )
     return "\n".join(lines) + "\n"
 
 
@@ -95,7 +147,26 @@ def generate_experiment_scripts(config_path: str | Path, output_dir: str | None 
 
     scripts: dict[str, str] = {}
 
+    prepare_path = script_dir / "prepare_data.sh"
+    prepare_path.write_text(
+        _build_prepare_data_script(script_dir, repo_root, config.get("task", {}).get("prepare_config")),
+        encoding="utf-8",
+    )
+    scripts["prepare_data"] = _project_relative(prepare_path, repo_root)
+
     pipeline_lines = _script_header(script_dir, repo_root)
+    dataset_path = config.get("task", {}).get("dataset_path")
+    if dataset_path:
+        pipeline_lines.extend(
+            [
+                f'if [ ! -f "{dataset_path}" ]; then',
+                f'  echo "Dataset not found: {dataset_path}" >&2',
+                f'  echo "Run: bash {prepare_path.name}" >&2',
+                "  exit 1",
+                "fi",
+                "",
+            ]
+        )
     pipeline_lines.append(_quote_command(["python", "scripts/run_pipeline.py", "--config", config_ref]))
     pipeline_path = script_dir / "run_pipeline.sh"
     pipeline_path.write_text("\n".join(pipeline_lines) + "\n", encoding="utf-8")

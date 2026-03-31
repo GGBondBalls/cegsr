@@ -54,11 +54,16 @@ def _iter_with_progress(items: list[Any], desc: str):
         return _generator()
 
 
-def load_samples(dataset_path: str) -> list[TaskSample]:
+def load_samples(dataset_path: str, prepare_config: str | None = None) -> list[TaskSample]:
     path = Path(dataset_path)
     if not path.exists():
+        hint = (
+            f'Run `python scripts/prepare_data.py --config {prepare_config}` first, '
+            if prepare_config
+            else 'Run `python scripts/prepare_data.py --config configs/datasets/reasoning_mix_eval.yaml` first, '
+        )
         raise FileNotFoundError(
-            f'Dataset file not found: {dataset_path}. Run `python scripts/prepare_data.py --config configs/datasets/reasoning_mix_eval.yaml` first, or point task.dataset_path to an existing jsonl.'
+            f'Dataset file not found: {dataset_path}. {hint}or point task.dataset_path to an existing jsonl.'
         )
     return [TaskSample.from_dict(item) for item in read_jsonl(path)]
 
@@ -165,7 +170,8 @@ def collect_episodes(
     system = build_system(config_or_path, use_graph=use_retrieval)
     config = system['config']
     runtime = system['runtime']
-    samples = load_samples(config['task']['dataset_path'])
+    dataset_path = config['task']['dataset_path']
+    samples = load_samples(dataset_path, prepare_config=config['task'].get('prepare_config'))
     if max_samples is not None:
         samples = samples[:max_samples]
     retrieval_cfg = config.get('experience', {}).get('retrieval', {})
@@ -327,7 +333,7 @@ def evaluate_episode_file(episodes_path: str, output_dir: str, graph_dir: str | 
 def run_end_to_end_method(config: dict[str, Any], method_name: str, output_dir: str) -> tuple[str, dict]:
     method_dir = Path(output_dir) / method_name
     ensure_dir(method_dir)
-    dataset_samples = load_samples(config['task']['dataset_path'])
+    dataset_samples = load_samples(config['task']['dataset_path'], prepare_config=config['task'].get('prepare_config'))
 
     if method_name == 'single_agent':
         system = build_system(config, use_graph=False)
