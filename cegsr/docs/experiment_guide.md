@@ -37,6 +37,12 @@ python scripts/export_sft.py --config configs/base.yaml --episodes outputs/demo/
 python scripts/run_eval.py --episodes outputs/demo/repaired.jsonl --output-dir outputs/demo/eval --graph-dir outputs/demo/graph
 ```
 
+If you want a single entrypoint for the same sequence, use:
+
+```bash
+python scripts/run_pipeline.py --config configs/base.yaml
+```
+
 ## 4. Run the baseline / ablation suite
 
 ```bash
@@ -59,6 +65,25 @@ The export step generates `dataset_info.json` and per-role training YAMLs. Run:
 bash outputs/demo/training_data/run_llamafactory.sh
 ```
 
-## 7. Practical recommendation
+If your config defines `training.distributed`, the export step also generates:
+
+```bash
+bash outputs/demo/training_data/run_llamafactory_ddp.sh
+```
+
+## 7. Dual-4090 server workflow
+
+For a dual-RTX4090 server, prefer the dedicated profile:
+
+```bash
+python scripts/setup_experiment.py --config configs/profiles/dual_4090_vllm.yaml
+bash outputs/dual_4090/launch_inference_server.sh
+bash outputs/dual_4090/run_pipeline.sh
+bash outputs/dual_4090/training_data/run_llamafactory_ddp.sh
+```
+
+See [`dual_4090_workflow.md`](dual_4090_workflow.md) for details.
+
+## 8. Practical recommendation
 
 First run with `model_size: 7B` to validate the loop, then scale to a stronger local checkpoint. Keep the benchmark mix fixed while iterating on verifier prompts, repair thresholds, and graph retrieval settings.

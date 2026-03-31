@@ -1,0 +1,54 @@
+_base_: ../base.yaml
+
+project:
+  output_dir: outputs/dual_4090
+
+backend:
+  kind: vllm
+  model: /home/fyk/models/Qwen/Qwen2.5-X.XB-Instruct
+  model_size: 7B
+  base_url: http://127.0.0.1:8000/v1
+  api_key: EMPTY
+  extra_body:
+    top_k: 40
+
+serving:
+  enabled: true
+  kind: vllm
+  model_name_or_path: /home/fyk/models/Qwen/Qwen2.5-X.XB-Instruct
+  model_size: 7B
+  gpu_ids: [0, 1]
+  tensor_parallel_size: 2
+  host: 127.0.0.1
+  port: 8000
+  api_key: EMPTY
+  dtype: auto
+  gpu_memory_utilization: 0.92
+  max_model_len: 4096
+  swap_space: 8
+  max_num_seqs: 16
+
+training:
+  model_name_or_path: /home/fyk/models/Qwen/Qwen2.5-X.XB-Instruct
+  model_size: 14B
+  distributed:
+    gpus: [0, 1]
+    nproc_per_node: 2
+    nnodes: 1
+    node_rank: 0
+    master_addr: 127.0.0.1
+    master_port: 29500
+    force_torchrun: true
+  qlora_template:
+    stage: sft
+    do_train: true
+    finetuning_type: lora
+    quantization_bit: 4
+    lora_rank: 8
+    lora_alpha: 16
+    per_device_train_batch_size: 1
+    gradient_accumulation_steps: 8
+    learning_rate: 0.0002
+    num_train_epochs: 1.0
+    cutoff_len: 2048
+    template: qwen

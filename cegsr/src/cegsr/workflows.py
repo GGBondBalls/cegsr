@@ -95,15 +95,23 @@ def make_backend(cfg: dict[str, Any]):
             model_size=cfg.get('model_size'),
         )
     if kind == 'vllm':
+        model = resolve_local_model_path(
+            cfg['model'],
+            model_size_hint=cfg.get('model_size'),
+        )
         return VLLMBackend(
-            model=cfg['model'],
+            model=model,
             base_url=cfg['base_url'],
             api_key=cfg.get('api_key', 'EMPTY'),
             extra_body=cfg.get('extra_body', {}),
         )
     if kind == 'sglang':
+        model = resolve_local_model_path(
+            cfg['model'],
+            model_size_hint=cfg.get('model_size'),
+        )
         return SGLangBackend(
-            model=cfg['model'],
+            model=model,
             base_url=cfg['base_url'],
             api_key=cfg.get('api_key', 'EMPTY'),
             extra_body=cfg.get('extra_body', {}),
@@ -273,8 +281,41 @@ def export_training_data(episodes_path: str, config_or_path: str | dict[str, Any
         output_dir=str(Path(config['project']['output_dir']) / 'llamafactory_runs'),
         lora_template=config['training'].get('lora_template', {}),
         qlora_template=config['training'].get('qlora_template', {}),
+        distributed_config=config['training'].get('distributed'),
     )
     return manifest
+
+
+def run_pipeline(config_or_path: str | dict[str, Any], output_dir: str | None = None) -> dict[str, Any]:
+    config = load_config(config_or_path) if isinstance(config_or_path, (str, Path)) else deepcopy(config_or_path)
+    if output_dir:
+        config['project']['output_dir'] = output_dir
+        config.setdefault('experience', {})['graph_dir'] = str(Path(output_dir) / 'graph')
+
+    project_dir = Path(config['project']['output_dir'])
+    raw_file = str(project_dir / 'raw.jsonl')
+    annotated_file = str(project_dir / 'annotated.jsonl')
+    repaired_file = str(project_dir / 'repaired.jsonl')
+    graph_dir = str(project_dir / 'graph')
+    export_dir = str(project_dir / 'training_data')
+    eval_dir = str(project_dir / 'eval')
+
+    collect_episodes(config, output_path=raw_file, use_retrieval=False)
+    annotate_episodes(raw_file, config, output_path=annotated_file)
+    repair_episodes(annotated_file, config, output_path=repaired_file)
+    build_experience_graph(repaired_file, config, graph_dir=graph_dir)
+    export_training_data(repaired_file, config, export_dir=export_dir)
+    metrics = evaluate_episode_file(repaired_file, eval_dir, graph_dir=graph_dir)
+
+    return {
+        'raw': raw_file,
+        'annotated': annotated_file,
+        'repaired': repaired_file,
+        'graph_dir': graph_dir,
+        'export_dir': export_dir,
+        'eval_dir': eval_dir,
+        'metrics': metrics,
+    }
 
 
 def evaluate_episode_file(episodes_path: str, output_dir: str, graph_dir: str | None = None) -> dict:

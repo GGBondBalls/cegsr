@@ -37,12 +37,43 @@ def build_dataset_info(manifest: dict[str, str], preference_path: str | None = N
     return info
 
 
+def _normalize_gpu_list(value: Any) -> list[str]:
+    if value is None:
+        return []
+    if isinstance(value, str):
+        return [item.strip() for item in value.split(",") if item.strip()]
+    if isinstance(value, (list, tuple)):
+        return [str(item).strip() for item in value if str(item).strip()]
+    return [str(value).strip()]
+
+
+def _build_single_process_script(command_lines: list[str]) -> str:
+    return "\n".join(["#!/usr/bin/env bash", "set -euo pipefail", "", *command_lines]) + "\n"
+
+
+def _build_distributed_script(command_lines: list[str], distributed_config: dict[str, Any]) -> str:
+    gpu_list = _normalize_gpu_list(distributed_config.get("gpus"))
+    env_lines = ["#!/usr/bin/env bash", "set -euo pipefail", ""]
+    if gpu_list:
+        env_lines.append(f'export CUDA_VISIBLE_DEVICES="{",".join(gpu_list)}"')
+    if distributed_config.get("force_torchrun", True):
+        env_lines.append("export FORCE_TORCHRUN=1")
+    env_lines.append(f'export NNODES="{distributed_config.get("nnodes", 1)}"')
+    env_lines.append(f'export NODE_RANK="{distributed_config.get("node_rank", 0)}"')
+    env_lines.append(f'export NPROC_PER_NODE="{distributed_config.get("nproc_per_node", max(1, len(gpu_list)) or 1)}"')
+    env_lines.append(f'export MASTER_ADDR="{distributed_config.get("master_addr", "127.0.0.1")}"')
+    env_lines.append(f'export MASTER_PORT="{distributed_config.get("master_port", 29500)}"')
+    env_lines.append("")
+    return "\n".join([*env_lines, *command_lines]) + "\n"
+
+
 def generate_llamafactory_project(
     export_dir: str,
     model_name_or_path: str,
     output_dir: str,
     lora_template: dict[str, Any] | None = None,
     qlora_template: dict[str, Any] | None = None,
+    distributed_config: dict[str, Any] | None = None,
 ) -> dict[str, str]:
     """
     Generate dataset_info.json, per-role YAML configs and helper shell scripts.
@@ -77,7 +108,7 @@ def generate_llamafactory_project(
     }
 
     config_paths: dict[str, str] = {}
-    command_lines: list[str] = ["#!/usr/bin/env bash", "set -euo pipefail", ""]
+    command_lines: list[str] = []
     for role in manifest:
         role_name = f"{role}_sft"
         for mode_name, template in [("lora", lora_template), ("qlora", qlora_template)]:
@@ -93,5 +124,10 @@ def generate_llamafactory_project(
             command_lines.append(f"llamafactory-cli train {cfg_path}")
             config_paths[f"{role}_{mode_name}"] = str(cfg_path)
 
-    (export_dir_path / "run_llamafactory.sh").write_text("\n".join(command_lines) + "\n", encoding="utf-8")
+    (export_dir_path / "run_llamafactory.sh").write_text(_build_single_process_script(command_lines), encoding="utf-8")
+    if distributed_config:
+        (export_dir_path / "run_llamafactory_ddp.sh").write_text(
+            _build_distributed_script(command_lines, distributed_config),
+            encoding="utf-8",
+        )
     return config_paths

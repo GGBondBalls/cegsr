@@ -33,6 +33,16 @@ def _iter_candidate_dirs(root: Path) -> Iterable[Path]:
     return uniq
 
 
+def render_model_path_template(model_name_or_path: str, model_size_hint: str | None = None) -> str:
+    raw = os.path.expandvars(model_name_or_path)
+    size = model_size_hint or os.environ.get('CEGSR_MODEL_SIZE', '7B')
+    if 'X.XB' in raw:
+        raw = raw.replace('X.XB', size)
+    if '{model_size}' in raw:
+        raw = raw.format(model_size=size)
+    return raw
+
+
 def resolve_local_model_path(model_name_or_path: str, model_size_hint: str | None = None) -> str:
     """
     Resolve a local HuggingFace model path robustly.
@@ -43,12 +53,8 @@ def resolve_local_model_path(model_name_or_path: str, model_size_hint: str | Non
     3) a template path containing ``X.XB`` or ``{model_size}``
     4) a non-local identifier such as ``Qwen/Qwen2.5-7B-Instruct`` (returned unchanged)
     """
-    raw = os.path.expandvars(model_name_or_path)
+    raw = render_model_path_template(model_name_or_path, model_size_hint=model_size_hint)
     size = model_size_hint or os.environ.get('CEGSR_MODEL_SIZE', '7B')
-    if 'X.XB' in raw:
-        raw = raw.replace('X.XB', size)
-    if '{model_size}' in raw:
-        raw = raw.format(model_size=size)
 
     path = Path(raw)
     if not path.exists():

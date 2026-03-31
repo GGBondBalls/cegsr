@@ -240,6 +240,11 @@ python scripts/export_sft.py --config configs/base.yaml --episodes outputs/demo/
 python scripts/run_eval.py --episodes outputs/demo/repaired.jsonl --output-dir outputs/demo/eval --graph-dir outputs/demo/graph
 ```
 
+### One-command pipeline
+```bash
+python scripts/run_pipeline.py --config configs/base.yaml
+```
+
 ### Step 7: run ablations
 ```bash
 python scripts/run_ablation.py --config configs/base.yaml --output-dir outputs/ablations_real
@@ -263,6 +268,12 @@ Typical usage:
 
 ```bash
 bash outputs/demo/training_data/run_llamafactory.sh
+```
+
+If your config includes `training.distributed`, the export step also writes:
+
+```bash
+bash outputs/demo/training_data/run_llamafactory_ddp.sh
 ```
 
 ---
@@ -311,6 +322,16 @@ python scripts/run_ablation.py --config configs/base_demo.yaml --output-dir outp
 python scripts/prepare_data.py --config configs/datasets/reasoning_mix_eval.yaml
 python scripts/run_ablation.py --config configs/base.yaml --output-dir outputs/ablations_real
 ```
+
+### Dual-4090 server experiment
+```bash
+python scripts/setup_experiment.py --config configs/profiles/dual_4090_vllm.yaml
+bash outputs/dual_4090/launch_inference_server.sh
+python scripts/run_pipeline.py --config configs/profiles/dual_4090_vllm.yaml
+bash outputs/dual_4090/training_data/run_llamafactory_ddp.sh
+```
+
+See `docs/dual_4090_workflow.md` for the recommended repeated-experiment workflow.
 
 ---
 

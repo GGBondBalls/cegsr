@@ -29,9 +29,30 @@ def _expand_env(value: Any) -> Any:
     return value
 
 
+def _load_raw_config(path: Path, stack: tuple[Path, ...]) -> dict[str, Any]:
+    resolved = path.resolve()
+    if resolved in stack:
+        cycle = " -> ".join(str(item) for item in (*stack, resolved))
+        raise ValueError(f"Config inheritance cycle detected: {cycle}")
+
+    raw = read_yaml(resolved) or {}
+    bases = raw.pop("_base_", raw.pop("extends", None))
+    if not bases:
+        return raw
+
+    base_items = [bases] if isinstance(bases, str) else list(bases)
+    merged_base: dict[str, Any] = {}
+    for base_item in base_items:
+        base_path = Path(base_item)
+        if not base_path.is_absolute():
+            base_path = resolved.parent / base_path
+        merged_base = deep_merge(merged_base, _load_raw_config(base_path, (*stack, resolved)))
+    return deep_merge(merged_base, raw)
+
+
 def load_config(path: str | Path, overrides: list[str] | None = None) -> dict[str, Any]:
     """Load a YAML config and optionally apply KEY=VALUE overrides."""
-    config = read_yaml(path) or {}
+    config = _load_raw_config(Path(path), ())
     config = _expand_env(config)
     overrides = overrides or []
     for item in overrides:
