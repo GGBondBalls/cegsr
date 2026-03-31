@@ -1,6 +1,7 @@
 from __future__ import annotations
 
 import re
+from decimal import Decimal, InvalidOperation
 from typing import Any
 
 from cegsr.tasks.base import BaseTask, normalize_text
@@ -17,6 +18,15 @@ class QATask(BaseTask):
         re.compile(r"\(([A-Z])\)", re.I),
     )
     _ANSWER_LINE_RE = re.compile(r"^\s*(?:final answer|answer|proposed answer|correct answer)\s*:\s*.+$", re.I)
+    _NUMERIC_TOKEN_RE = re.compile(r"[-+]?(?:\d{1,3}(?:,\d{3})+|\d+)(?:\.\d+)?")
+    _NUMERIC_ANSWER_PATTERNS = (
+        re.compile(
+            r"(?:final answer|correct answer|best answer|proposed answer|answer)\s*(?:is|:)?\s*\$?\s*"
+            r"([-+]?(?:\d{1,3}(?:,\d{3})+|\d+)(?:\.\d+)?)",
+            re.I,
+        ),
+        re.compile(r"####\s*\$?\s*([-+]?(?:\d{1,3}(?:,\d{3})+|\d+)(?:\.\d+)?)", re.I),
+    )
 
     def _parse_choices(self, sample: TaskSample) -> dict[str, str]:
         parsed: dict[str, str] = {}
@@ -58,6 +68,39 @@ class QATask(BaseTask):
                     return label, choice_text
 
         return None, None
+
+    def _normalize_numeric_value(self, value: str) -> str | None:
+        cleaned = value.strip().replace(',', '')
+        if not cleaned:
+            return None
+        try:
+            decimal_value = Decimal(cleaned)
+        except InvalidOperation:
+            return None
+        if decimal_value == decimal_value.to_integral():
+            return str(decimal_value.quantize(Decimal('1')))
+        normalized = format(decimal_value.normalize(), 'f')
+        return normalized.rstrip('0').rstrip('.') if '.' in normalized else normalized
+
+    def _extract_numeric_answer(self, text: str) -> str | None:
+        for pattern in self._NUMERIC_ANSWER_PATTERNS:
+            match = pattern.search(text)
+            if match:
+                normalized = self._normalize_numeric_value(match.group(1))
+                if normalized is not None:
+                    return normalized
+
+        matches = self._NUMERIC_TOKEN_RE.findall(text)
+        for candidate in reversed(matches):
+            normalized = self._normalize_numeric_value(candidate)
+            if normalized is not None:
+                return normalized
+        return None
+
+    def _is_numeric_freeform_task(self, sample: TaskSample) -> bool:
+        dataset_name = str(sample.metadata.get("dataset_name", "")).lower()
+        category = str(sample.metadata.get("category", "")).lower()
+        return dataset_name == "gsm8k" or category == "math_word_problem"
 
     def _format_instructions(self, sample: TaskSample, role: str) -> str:
         if not sample.choices:
@@ -182,6 +225,7 @@ class QATask(BaseTask):
         gold = normalize_text(sample.answer)
         exact = int(pred == gold)
         mcq = 0
+        numeric = 0
         if sample.choices:
             gold_label, gold_text = self._parse_gold_choice(sample)
             pred_label, pred_text = self._extract_mcq_choice(prediction, sample)
@@ -190,5 +234,10 @@ class QATask(BaseTask):
                 or (pred_text is not None and pred_text == gold_text)
                 or pred == gold
             )
-        accuracy = mcq if sample.choices else exact
-        return {"accuracy": accuracy, "exact_match": exact, "mcq_accuracy": mcq}
+        elif self._is_numeric_freeform_task(sample):
+            gold_numeric = self._extract_numeric_answer(sample.answer)
+            pred_numeric = self._extract_numeric_answer(prediction)
+            numeric = int(gold_numeric is not None and pred_numeric is not None and gold_numeric == pred_numeric)
+
+        accuracy = mcq if sample.choices else (numeric if self._is_numeric_freeform_task(sample) else exact)
+        return {"accuracy": accuracy, "exact_match": exact, "mcq_accuracy": mcq, "numeric_accuracy": numeric}

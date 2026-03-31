@@ -54,6 +54,10 @@ def _iter_with_progress(items: list[Any], desc: str):
         return _generator()
 
 
+def _print_progress(message: str) -> None:
+    print(message, flush=True)
+
+
 def load_samples(dataset_path: str, prepare_config: str | None = None) -> list[TaskSample]:
     path = Path(dataset_path)
     if not path.exists():
@@ -334,16 +338,18 @@ def run_end_to_end_method(config: dict[str, Any], method_name: str, output_dir: 
     method_dir = Path(output_dir) / method_name
     ensure_dir(method_dir)
     dataset_samples = load_samples(config['task']['dataset_path'], prepare_config=config['task'].get('prepare_config'))
+    _print_progress(f'[Ablation] Start {method_name} ({len(dataset_samples)} samples)')
 
     if method_name == 'single_agent':
         system = build_system(config, use_graph=False)
         from cegsr.baselines.single_agent import SingleAgentBaseline
 
         baseline = SingleAgentBaseline(system['runtime'])
-        episodes = [baseline.run(sample) for sample in dataset_samples]
+        episodes = [baseline.run(sample) for sample in _iter_with_progress(dataset_samples, desc=f'{method_name}:Run')]
         out_file = str(method_dir / 'episodes.jsonl')
         save_episodes(out_file, episodes)
         metrics = evaluate_episode_file(out_file, str(method_dir / 'report'))
+        _print_progress(f'[Ablation] Done {method_name} accuracy={metrics.get("accuracy", 0)}')
         return out_file, metrics
 
     if method_name == 'static_multi_agent':
@@ -351,10 +357,11 @@ def run_end_to_end_method(config: dict[str, Any], method_name: str, output_dir: 
         from cegsr.baselines.multi_agent_static import StaticMultiAgentBaseline
 
         baseline = StaticMultiAgentBaseline(system['runtime'])
-        episodes = [baseline.run(sample) for sample in dataset_samples]
+        episodes = [baseline.run(sample) for sample in _iter_with_progress(dataset_samples, desc=f'{method_name}:Run')]
         out_file = str(method_dir / 'episodes.jsonl')
         save_episodes(out_file, episodes)
         metrics = evaluate_episode_file(out_file, str(method_dir / 'report'))
+        _print_progress(f'[Ablation] Done {method_name} accuracy={metrics.get("accuracy", 0)}')
         return out_file, metrics
 
     if method_name == 'sirius_lite':
@@ -362,10 +369,11 @@ def run_end_to_end_method(config: dict[str, Any], method_name: str, output_dir: 
         from cegsr.baselines.sirius_lite import SiriusLiteBaseline
 
         baseline = SiriusLiteBaseline(system['runtime'])
-        episodes = [baseline.run(sample) for sample in dataset_samples]
+        episodes = [baseline.run(sample) for sample in _iter_with_progress(dataset_samples, desc=f'{method_name}:Run')]
         out_file = str(method_dir / 'episodes.jsonl')
         save_episodes(out_file, episodes)
         metrics = evaluate_episode_file(out_file, str(method_dir / 'report'))
+        _print_progress(f'[Ablation] Done {method_name} accuracy={metrics.get("accuracy", 0)}')
         return out_file, metrics
 
     raw_file = str(method_dir / 'raw.jsonl')
@@ -378,6 +386,7 @@ def run_end_to_end_method(config: dict[str, Any], method_name: str, output_dir: 
         annotate_episodes(raw_file, config, output_path=annotated_file)
         export_training_data(annotated_file, config, export_dir=str(method_dir / 'export'))
         metrics = evaluate_episode_file(annotated_file, str(method_dir / 'report'))
+        _print_progress(f'[Ablation] Done {method_name} accuracy={metrics.get("accuracy", 0)}')
         return annotated_file, metrics
 
     annotate_episodes(
@@ -400,6 +409,7 @@ def run_end_to_end_method(config: dict[str, Any], method_name: str, output_dir: 
         current_eval_path = str(method_dir / 'retrieved_eval.jsonl')
 
     metrics = evaluate_episode_file(current_eval_path, str(method_dir / 'report'), graph_dir=graph_dir if Path(graph_dir).exists() else None)
+    _print_progress(f'[Ablation] Done {method_name} accuracy={metrics.get("accuracy", 0)}')
     return current_eval_path, metrics
 
 

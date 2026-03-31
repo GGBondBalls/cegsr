@@ -123,3 +123,47 @@ def test_solver_prompt_sanitizes_retrieved_mcq_answers():
     assert "reasoning pattern:" in content
     assert "Answer: E. hall" not in content
     assert "q=Where is a mat often placed?" in content
+
+
+def test_gsm8k_numeric_accuracy_accepts_answer_phrase():
+    task = QATask()
+    sample = TaskSample(
+        sample_id="gsm1",
+        question="If John has 40 apples and buys 2 more, how many apples does he have?",
+        answer="42",
+        task_type="qa",
+        metadata={"dataset_name": "gsm8k", "category": "math_word_problem"},
+    )
+    metrics = task.evaluate_prediction(sample, "Final Answer: 42 apples")
+    assert metrics["accuracy"] == 1
+    assert metrics["numeric_accuracy"] == 1
+    assert metrics["exact_match"] == 0
+
+
+def test_gsm8k_numeric_accuracy_uses_last_number_when_reasoning_present():
+    task = QATask()
+    sample = TaskSample(
+        sample_id="gsm2",
+        question="What is 19 + 23?",
+        answer="42",
+        task_type="qa",
+        metadata={"dataset_name": "gsm8k", "category": "math_word_problem"},
+    )
+    prediction = "We add 19 and 23 to get 42. Therefore the answer is 42."
+    metrics = task.evaluate_prediction(sample, prediction)
+    assert metrics["accuracy"] == 1
+    assert metrics["numeric_accuracy"] == 1
+
+
+def test_non_math_freeform_qa_still_uses_exact_match():
+    task = QATask()
+    sample = TaskSample(
+        sample_id="qa1",
+        question="What color is the sky on a clear day?",
+        answer="blue",
+        task_type="qa",
+        metadata={"dataset_name": "toy_qa"},
+    )
+    metrics = task.evaluate_prediction(sample, "The answer is blue.")
+    assert metrics["accuracy"] == 0
+    assert metrics["numeric_accuracy"] == 0

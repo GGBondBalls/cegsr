@@ -149,12 +149,14 @@ def _build_inference_healthcheck_lines(config: dict[str, Any]) -> list[str]:
 
     models_url = f"{base_url}/models"
     api_key = str(backend.get("api_key", "") or "")
+    launch_hint = Path(config.get("project", {}).get("output_dir", "outputs/dual_4090")) / "launch_inference_server.sh"
     return [
         'python - <<\'PY\'',
         "import sys",
         "import requests",
         f"url = {models_url!r}",
         f"api_key = {api_key!r}",
+        f"launch_hint = {str(launch_hint).replace(chr(92), '/').__repr__()}",
         "headers = {'Authorization': f'Bearer {api_key}'} if api_key else {}",
         "try:",
         "    response = requests.get(url, headers=headers, timeout=5)",
@@ -162,7 +164,7 @@ def _build_inference_healthcheck_lines(config: dict[str, Any]) -> list[str]:
         "except Exception as exc:",
         '    print(f\"Inference server is not reachable: {url}\", file=sys.stderr)',
         '    print(f\"Reason: {exc}\", file=sys.stderr)',
-        '    print(\"Start it first with: bash outputs/dual_4090/launch_inference_server.sh\", file=sys.stderr)',
+        '    print(f\"Start it first with: bash {launch_hint}\", file=sys.stderr)',
         "    raise SystemExit(1)",
         "PY",
         "",
@@ -205,6 +207,7 @@ def generate_experiment_scripts(config_path: str | Path, output_dir: str | None 
     scripts["pipeline"] = _project_relative(pipeline_path, repo_root)
 
     ablation_lines = _script_header(script_dir, repo_root)
+    ablation_lines.extend(_build_inference_healthcheck_lines(config))
     ablation_lines.append(_quote_command(["python", "scripts/run_ablation.py", "--config", config_ref]))
     ablation_path = script_dir / "run_ablation.sh"
     ablation_path.write_text("\n".join(ablation_lines) + "\n", encoding="utf-8")
