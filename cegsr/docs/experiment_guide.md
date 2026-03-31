@@ -4,6 +4,8 @@
 
 This guide describes the recommended first real experiment path for CEG-SR after the smoke-test stage.
 
+Run the commands below from the repository root so `scripts/...`, `configs/...`, and `outputs/...` stay relative. Model paths remain absolute, for example `/home/fyk/models/Qwen/Qwen2.5-7B-Instruct`.
+
 ## 1. Build the benchmark mixture
 
 ```bash

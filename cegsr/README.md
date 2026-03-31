@@ -10,6 +10,8 @@ This repository is **not** a patch over the original SiriuS implementation and d
 
 > **CEG-SR = Causal Experience Graph with Selective Repair**
 
+Unless stated otherwise, commands in this README assume you are already in the repository root. Script, config, and output paths are intentionally kept relative; model directories remain absolute, for example `/home/fyk/models/Qwen/Qwen2.5-7B-Instruct`.
+
 ---
 
 ## 1. What this version focuses on

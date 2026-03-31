@@ -25,24 +25,22 @@ def _quote_command(parts: list[Any]) -> str:
 
 
 def _script_header(script_dir: Path, repo_root: Path) -> list[str]:
-    try:
-        root_target = os.path.relpath(repo_root, script_dir).replace("\\", "/")
-    except ValueError:
-        root_target = str(repo_root).replace("\\", "/")
+    root_target = os.path.relpath(repo_root, script_dir).replace("\\", "/")
     return [
         "#!/usr/bin/env bash",
         "set -euo pipefail",
-        f'ROOT_DIR="$(cd "{root_target}" && pwd)"',
+        f'ROOT_DIR="$(cd "$(dirname "${{BASH_SOURCE[0]}}")/{root_target}" && pwd)"',
         'cd "$ROOT_DIR"',
         "",
     ]
 
 
 def _config_reference(config_path: Path, repo_root: Path) -> str:
-    try:
-        return os.path.relpath(config_path, repo_root).replace("\\", "/")
-    except ValueError:
-        return str(config_path)
+    return os.path.relpath(config_path, repo_root).replace("\\", "/")
+
+
+def _project_relative(path: Path, repo_root: Path) -> str:
+    return os.path.relpath(path, repo_root).replace("\\", "/")
 
 
 def _build_vllm_server_script(script_dir: Path, repo_root: Path, serving: dict[str, Any]) -> str:
@@ -91,8 +89,8 @@ def _build_vllm_server_script(script_dir: Path, repo_root: Path, serving: dict[s
 def generate_experiment_scripts(config_path: str | Path, output_dir: str | None = None) -> dict[str, str]:
     config_file = Path(config_path).resolve()
     config = load_config(config_file)
-    repo_root = Path(__file__).resolve().parents[2]
-    script_dir = ensure_dir(output_dir or config["project"]["output_dir"])
+    repo_root = Path.cwd().resolve()
+    script_dir = ensure_dir(output_dir or config["project"]["output_dir"]).resolve()
     config_ref = _config_reference(config_file, repo_root)
 
     scripts: dict[str, str] = {}
@@ -101,18 +99,18 @@ def generate_experiment_scripts(config_path: str | Path, output_dir: str | None 
     pipeline_lines.append(_quote_command(["python", "scripts/run_pipeline.py", "--config", config_ref]))
     pipeline_path = script_dir / "run_pipeline.sh"
     pipeline_path.write_text("\n".join(pipeline_lines) + "\n", encoding="utf-8")
-    scripts["pipeline"] = str(pipeline_path)
+    scripts["pipeline"] = _project_relative(pipeline_path, repo_root)
 
     ablation_lines = _script_header(script_dir, repo_root)
     ablation_lines.append(_quote_command(["python", "scripts/run_ablation.py", "--config", config_ref]))
     ablation_path = script_dir / "run_ablation.sh"
     ablation_path.write_text("\n".join(ablation_lines) + "\n", encoding="utf-8")
-    scripts["ablation"] = str(ablation_path)
+    scripts["ablation"] = _project_relative(ablation_path, repo_root)
 
     serving = config.get("serving", {})
     if serving.get("enabled") and serving.get("kind", "vllm") == "vllm":
         launcher_path = script_dir / "launch_inference_server.sh"
         launcher_path.write_text(_build_vllm_server_script(script_dir, repo_root, serving), encoding="utf-8")
-        scripts["serving"] = str(launcher_path)
+        scripts["serving"] = _project_relative(launcher_path, repo_root)
 
     return scripts

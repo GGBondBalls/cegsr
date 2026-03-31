@@ -10,6 +10,8 @@ This note captures the recommended server-side workflow for a dual-RTX4090 machi
 
 This keeps the project structure unchanged while making repeated experiments easier to run.
 
+All commands below assume you run them from the repository root `~/cegsr`, so script and config paths stay relative. The only paths intentionally kept absolute are model directories such as `/home/fyk/models/Qwen/Qwen2.5-7B-Instruct`.
+
 ## Recommended profile
 
 Use:

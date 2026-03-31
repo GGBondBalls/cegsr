@@ -10,6 +10,8 @@ This repository is **not** a patch over the original SiriuS implementation and d
 
 > **CEG-SR = Causal Experience Graph with Selective Repair**
 
+Unless stated otherwise, commands in this README assume you are already in the project subdirectory `cegsr/`. Script, config, and output paths are intentionally kept relative; model directories remain absolute, for example `/home/fyk/models/Qwen/Qwen2.5-7B-Instruct`.
+
 ---
 
 ## 1. What this version focuses on
@@ -242,7 +244,7 @@ python scripts/run_eval.py --episodes outputs/demo/repaired.jsonl --output-dir o
 
 ### One-command pipeline
 ```bash
-python cegsr/scripts/run_pipeline.py --config cegsr/configs/base.yaml
+python scripts/run_pipeline.py --config configs/base.yaml
 ```
 
 ### Step 7: run ablations
@@ -273,7 +275,7 @@ bash outputs/demo/training_data/run_llamafactory.sh
 If your config includes `training.distributed`, the export step also writes:
 
 ```bash
-bash cegsr/outputs/demo/training_data/run_llamafactory_ddp.sh
+bash outputs/demo/training_data/run_llamafactory_ddp.sh
 ```
 
 ---
@@ -325,13 +327,13 @@ python scripts/run_ablation.py --config configs/base.yaml --output-dir outputs/a
 
 ### Dual-4090 server experiment
 ```bash
-python cegsr/scripts/setup_experiment.py --config cegsr/configs/profiles/dual_4090_vllm.yaml
-bash cegsr/outputs/dual_4090/launch_inference_server.sh
-python cegsr/scripts/run_pipeline.py --config cegsr/configs/profiles/dual_4090_vllm.yaml
-bash cegsr/outputs/dual_4090/training_data/run_llamafactory_ddp.sh
+python scripts/setup_experiment.py --config configs/profiles/dual_4090_vllm.yaml
+bash outputs/dual_4090/launch_inference_server.sh
+python scripts/run_pipeline.py --config configs/profiles/dual_4090_vllm.yaml
+bash outputs/dual_4090/training_data/run_llamafactory_ddp.sh
 ```
 
-See `cegsr/docs/dual_4090_workflow.md` for the recommended repeated-experiment workflow.
+See `docs/dual_4090_workflow.md` for the recommended repeated-experiment workflow.
 
 ---
 
