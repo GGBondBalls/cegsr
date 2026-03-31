@@ -148,13 +148,16 @@ def _build_inference_healthcheck_lines(config: dict[str, Any]) -> list[str]:
         return []
 
     models_url = f"{base_url}/models"
+    api_key = str(backend.get("api_key", "") or "")
     return [
         'python - <<\'PY\'',
         "import sys",
         "import requests",
         f"url = {models_url!r}",
+        f"api_key = {api_key!r}",
+        "headers = {'Authorization': f'Bearer {api_key}'} if api_key else {}",
         "try:",
-        "    response = requests.get(url, timeout=5)",
+        "    response = requests.get(url, headers=headers, timeout=5)",
         "    response.raise_for_status()",
         "except Exception as exc:",
         '    print(f\"Inference server is not reachable: {url}\", file=sys.stderr)',
