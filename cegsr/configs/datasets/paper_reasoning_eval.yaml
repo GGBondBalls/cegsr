@@ -1,0 +1,13 @@
+recipe: reasoning_mix
+split: validation
+max_per_source: 100
+seed: 42
+output_path: outputs/data/paper_reasoning_eval.jsonl
+include_sources:
+  - college_physics
+  - college_chemistry
+  - pubmed_qa
+  - gsm8k
+  - commonsense_qa
+  - ai2_arc
+  - boolq

@@ -1,7 +1,6 @@
 from __future__ import annotations
 
 import random
-from collections import defaultdict
 from pathlib import Path
 from typing import Any
 
@@ -28,6 +27,55 @@ def _choice_lines(choices: list[str]) -> tuple[list[str], str]:
     for idx, choice in enumerate(choices):
         lines.append(f'{labels[idx]}. {choice}')
     return lines, answer
+
+
+def _choice_labels(num_choices: int) -> list[str]:
+    labels = 'ABCDEFGHIJKLMNOPQRSTUVWXYZ'
+    if num_choices > len(labels):
+        raise DatasetPreparationError(f'Unsupported number of choices: {num_choices}')
+    return [labels[idx] for idx in range(num_choices)]
+
+
+def _format_choice_answer(answer_label: str | None, answer_text: str | None, fallback: str = '') -> str:
+    if answer_label and answer_text:
+        return f'{answer_label}. {answer_text}'
+    if answer_label:
+        return answer_label
+    if answer_text:
+        return answer_text
+    return fallback
+
+
+def _resolve_choice_answer(answer_value: Any, choice_texts: list[str]) -> tuple[str | None, str | None]:
+    labels = _choice_labels(len(choice_texts))
+    normalized_texts = [str(choice).strip() for choice in choice_texts]
+
+    if isinstance(answer_value, bool):
+        answer_value = int(answer_value)
+
+    if isinstance(answer_value, int):
+        if 0 <= answer_value < len(labels):
+            return labels[answer_value], normalized_texts[answer_value]
+        return None, None
+
+    raw = str(answer_value).strip()
+    if not raw:
+        return None, None
+
+    upper = raw.upper()
+    if upper in labels:
+        idx = labels.index(upper)
+        return upper, normalized_texts[idx]
+
+    if raw.isdigit():
+        idx = int(raw)
+        if 0 <= idx < len(labels):
+            return labels[idx], normalized_texts[idx]
+
+    for label, text in zip(labels, normalized_texts):
+        if raw == text:
+            return label, text
+    return None, None
 
 
 def _normalize_gsm8k(record: dict[str, Any], idx: int, split: str) -> dict[str, Any]:
@@ -105,6 +153,36 @@ def _normalize_arc(record: dict[str, Any], idx: int, split: str) -> dict[str, An
     }
 
 
+def _normalize_mmlu_subject(
+    record: dict[str, Any],
+    idx: int,
+    split: str,
+    dataset_name: str,
+    subject: str,
+) -> dict[str, Any]:
+    question = str(record.get('question', '')).strip()
+    choices = [str(choice).strip() for choice in record.get('choices', [])]
+    labels = _choice_labels(len(choices))
+    labeled_choices = [f'{label}. {choice}' for label, choice in zip(labels, choices)]
+    answer_label, answer_text = _resolve_choice_answer(record.get('answer'), choices)
+    answer = _format_choice_answer(answer_label, answer_text, fallback=str(record.get('answer', '')).strip())
+    return {
+        'sample_id': f'{dataset_name}_{split}_{idx}',
+        'question': question,
+        'answer': answer,
+        'context': '',
+        'choices': labeled_choices,
+        'task_type': 'mmlu_style',
+        'metadata': {
+            'dataset_name': dataset_name,
+            'source_split': split,
+            'category': subject,
+            'mmlu_subject': subject,
+            'answer_label': answer_label or '',
+        },
+    }
+
+
 def _normalize_boolq(record: dict[str, Any], idx: int, split: str) -> dict[str, Any]:
     question = str(record.get('question', '')).strip()
     context = str(record.get('passage', '')).strip()
@@ -145,26 +223,129 @@ def _normalize_pubmedqa(record: dict[str, Any], idx: int, split: str) -> dict[st
     }
 
 
+def _normalize_college_physics(record: dict[str, Any], idx: int, split: str) -> dict[str, Any]:
+    return _normalize_mmlu_subject(
+        record,
+        idx=idx,
+        split=split,
+        dataset_name='college_physics',
+        subject='college_physics',
+    )
+
+
+def _normalize_college_chemistry(record: dict[str, Any], idx: int, split: str) -> dict[str, Any]:
+    return _normalize_mmlu_subject(
+        record,
+        idx=idx,
+        split=split,
+        dataset_name='college_chemistry',
+        subject='college_chemistry',
+    )
+
+
 NORMALIZERS = {
     'gsm8k': _normalize_gsm8k,
     'commonsense_qa': _normalize_commonsenseqa,
     'ai2_arc': _normalize_arc,
     'boolq': _normalize_boolq,
     'pubmed_qa': _normalize_pubmedqa,
+    'college_physics': _normalize_college_physics,
+    'college_chemistry': _normalize_college_chemistry,
 }
 
 
-def _take_split(dataset_name: str, subset: str | None, split: str, limit: int, seed: int) -> list[dict[str, Any]]:
-    if dataset_name == 'ai2_arc':
-        dataset = _load_dataset(dataset_name, subset or 'ARC-Challenge', split=split)
-    elif dataset_name == 'pubmed_qa':
-        dataset = _load_dataset('qiaojin/PubMedQA', 'pqa_labeled', split=split)
-    else:
-        dataset = _load_dataset(dataset_name, split=split)
-    rows = list(dataset)
-    rng = random.Random(seed)
-    rng.shuffle(rows)
-    return rows[:limit]
+DATASET_SPECS: dict[str, dict[str, Any]] = {
+    'gsm8k': {
+        'sources': [
+            {'path': 'openai/gsm8k', 'config': 'main'},
+            {'path': 'gsm8k', 'config': 'main'},
+        ],
+        'eval_splits': ['test', 'validation'],
+        'train_splits': ['train'],
+    },
+    'commonsense_qa': {
+        'sources': [
+            {'path': 'tau/commonsense_qa'},
+            {'path': 'commonsense_qa'},
+        ],
+        'eval_splits': ['validation'],
+        'train_splits': ['train'],
+    },
+    'ai2_arc': {
+        'sources': [
+            {'path': 'allenai/ai2_arc', 'config': 'ARC-Challenge'},
+            {'path': 'ai2_arc', 'config': 'ARC-Challenge'},
+        ],
+        'eval_splits': ['validation'],
+        'train_splits': ['train'],
+    },
+    'boolq': {
+        'sources': [
+            {'path': 'google/boolq'},
+            {'path': 'super_glue', 'config': 'boolq'},
+            {'path': 'boolq'},
+        ],
+        'eval_splits': ['validation'],
+        'train_splits': ['train'],
+    },
+    'pubmed_qa': {
+        'sources': [
+            {'path': 'qiaojin/PubMedQA', 'config': 'pqa_labeled'},
+        ],
+        'eval_splits': ['train'],
+        'train_splits': ['train'],
+    },
+    'college_physics': {
+        'sources': [
+            {'path': 'cais/mmlu', 'config': 'college_physics'},
+            {'path': 'lukaemon/mmlu', 'config': 'college_physics'},
+        ],
+        'eval_splits': ['test', 'validation', 'dev'],
+        'train_splits': ['auxiliary_train', 'dev', 'validation'],
+    },
+    'college_chemistry': {
+        'sources': [
+            {'path': 'cais/mmlu', 'config': 'college_chemistry'},
+            {'path': 'lukaemon/mmlu', 'config': 'college_chemistry'},
+        ],
+        'eval_splits': ['test', 'validation', 'dev'],
+        'train_splits': ['auxiliary_train', 'dev', 'validation'],
+    },
+}
+
+
+def _split_candidates_for(dataset_name: str, split: str) -> list[str]:
+    spec = DATASET_SPECS.get(dataset_name)
+    if spec is None:
+        raise DatasetPreparationError(f'Unsupported dataset source: {dataset_name}')
+    bucket = 'train_splits' if split.lower() == 'train' else 'eval_splits'
+    return list(spec[bucket])
+
+
+def _take_split(dataset_name: str, split: str, limit: int, seed: int) -> tuple[list[dict[str, Any]], str, str]:
+    spec = DATASET_SPECS.get(dataset_name)
+    if spec is None:
+        raise DatasetPreparationError(f'Unsupported dataset source: {dataset_name}')
+
+    errors: list[str] = []
+    for source in spec['sources']:
+        source_path = source['path']
+        source_config = source.get('config')
+        for split_name in _split_candidates_for(dataset_name, split):
+            try:
+                if source_config:
+                    dataset = _load_dataset(source_path, source_config, split=split_name)
+                else:
+                    dataset = _load_dataset(source_path, split=split_name)
+                rows = list(dataset)
+                rng = random.Random(seed)
+                rng.shuffle(rows)
+                return rows[:limit], split_name, source_path
+            except Exception as exc:
+                source_ref = f'{source_path}/{source_config}' if source_config else source_path
+                errors.append(f'{source_ref}:{split_name}:{exc.__class__.__name__}')
+                continue
+    raise DatasetPreparationError('; '.join(errors))
 
 
 def build_reasoning_mix(
@@ -183,32 +364,49 @@ def build_reasoning_mix(
     - ai2_arc (ARC-Challenge)
     - boolq
     - pubmed_qa (optional; skipped if unavailable)
+    - college_physics
+    - college_chemistry
     """
     output_path = Path(output_path)
     ensure_dir(output_path.parent)
-    include_sources = include_sources or ['gsm8k', 'commonsense_qa', 'ai2_arc', 'boolq', 'pubmed_qa']
-    split_map = {
-        'gsm8k': 'test' if split in {'validation', 'eval', 'test'} else 'train',
-        'commonsense_qa': 'validation' if split in {'validation', 'eval', 'test'} else 'train',
-        'ai2_arc': 'validation' if split in {'validation', 'eval', 'test'} else 'train',
-        'boolq': 'validation' if split in {'validation', 'eval', 'test'} else 'train',
-        'pubmed_qa': 'train' if split in {'validation', 'eval', 'test'} else 'train',
-    }
-    subset_map = {'ai2_arc': 'ARC-Challenge', 'pubmed_qa': 'pqa_labeled'}
+    include_sources = include_sources or [
+        'gsm8k',
+        'commonsense_qa',
+        'ai2_arc',
+        'boolq',
+        'pubmed_qa',
+        'college_physics',
+        'college_chemistry',
+    ]
     rows: list[dict[str, Any]] = []
     summary_rows: list[dict[str, Any]] = []
 
     for name in include_sources:
-        source_split = split_map[name]
         try:
-            source_rows = _take_split(name, subset_map.get(name), source_split, max_per_source, seed)
+            source_rows, source_split, source_ref = _take_split(name, split, max_per_source, seed)
         except Exception as exc:
-            summary_rows.append({'dataset_name': name, 'source_split': source_split, 'num_rows': 0, 'status': f'skipped: {exc.__class__.__name__}'})
+            requested_splits = ','.join(_split_candidates_for(name, split))
+            summary_rows.append(
+                {
+                    'dataset_name': name,
+                    'source_split': requested_splits,
+                    'num_rows': 0,
+                    'status': f'skipped: {exc.__class__.__name__}',
+                }
+            )
             continue
         normalizer = NORMALIZERS[name]
         normalized = [normalizer(row, idx, source_split) for idx, row in enumerate(source_rows)]
         rows.extend(normalized)
-        summary_rows.append({'dataset_name': name, 'source_split': source_split, 'num_rows': len(normalized), 'status': 'ok'})
+        summary_rows.append(
+            {
+                'dataset_name': name,
+                'source_split': source_split,
+                'num_rows': len(normalized),
+                'source_ref': source_ref,
+                'status': 'ok',
+            }
+        )
 
     write_jsonl(output_path, rows)
     summary = {

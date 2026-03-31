@@ -442,3 +442,356 @@ python scripts/run_ablation.py --config configs/base.yaml --output-dir outputs/a
 > 当前 CEG-SR 版本的核心收益已经明确来自 verifier-aware 细粒度 credit assignment 与 selective repair，而不是 graph retrieval。
 
 这是一个相当重要的转折点。它意味着项目已经从“工程流程能跑”进入“方法主贡献可辨认”的阶段。对于后续论文写作和实验设计，这个判断应当作为优先前提。
+
+## 9. 2026-03-31：双 RTX4090 + vLLM 运行兼容与服务器基线实验
+
+这一轮工作的目标不是继续细化方法，而是先把后续多轮实验真正放到服务器上稳定跑起来，并把“单卡本地可跑”升级为“双卡服务器可重复执行”的实验基线。
+
+核心判断先写在最前面：
+
+> 目前暂时不需要大范围修改方法代码。当前最值得保留和沉淀的是：在不改变 CEG-SR 核心方法结构的前提下，完成双卡 vLLM 推理兼容、单命令 pipeline 运行、以及同一数据子集上的 raw / annotated / repaired 对照验证。
+
+### 9.1 本轮硬件与模型设置
+
+服务器硬件：
+
+- GPU: `RTX 4090 x2`
+- 运行环境：学校服务器个人账号
+
+本轮实际使用的模型设置：
+
+- 推理后端：`vLLM`
+- agent 推理模型：`Qwen2.5-7B-Instruct`
+- vLLM 并行方式：`tensor_parallel_size = 2`
+- 最大上下文：`max_model_len = 4096`
+- 并发设置：`max_num_seqs = 16`
+- 训练导出配置：仍保留 `Qwen2.5-14B-Instruct` 的双卡 DDP 导出脚本，但这一轮尚未正式启动训练
+
+这与前一轮日志中的 `1.5B + hf_local` 不同。本轮的重点是验证：
+
+1. 双卡服务器是否能稳定承接 collect / repair 主流程；
+2. 在不改核心方法逻辑的情况下，运行层切换到 `vLLM + TP=2` 后是否仍然保留 selective repair 收益；
+3. 后续是否可以把这套流程作为多轮实验的默认执行入口。
+
+### 9.2 本轮新增的工程优化，不属于方法大改
+
+这一轮代码修改主要集中在“运行兼容层”，而不是方法主干。
+
+#### 改动 A：配置继承与 profile 化
+
+为配置系统增加了 `_base_` 继承能力，使服务器实验不需要复制整份 `base.yaml`，只需在 profile 中覆盖必要字段。
+
+涉及文件：
+
+- `src/cegsr/config/loader.py`
+- `configs/profiles/dual_4090_vllm.yaml`
+
+这使得后续可以把：
+
+- 本地 smoke test
+- 单卡 HF local
+- 双卡 vLLM 推理
+- 双卡训练
+
+分别整理为独立 profile，而不是不断手工改同一份配置。
+
+#### 改动 B：模型路径模板统一
+
+将 `X.XB` / `{model_size}` 形式的路径模板统一抽象出来，使 `hf_local`、`vllm`、`sglang` 都能通过同样的 `model_size` 逻辑切换 `7B / 14B`。
+
+涉及文件：
+
+- `src/cegsr/utils/modeling.py`
+- `src/cegsr/workflows.py`
+
+这一步很关键，因为后续实验会频繁切换：
+
+- `7B` 作为 agent 推理模型
+- `14B` 作为训练目标模型
+
+如果路径切换仍靠手工改字符串，后续实验成本会很高，也容易出错。
+
+#### 改动 C：一键 pipeline 入口
+
+增加了：
+
+- `scripts/run_pipeline.py`
+
+把原先分散的：
+
+- `collect`
+- `credit`
+- `repair`
+- `build_graph`
+- `export`
+- `eval`
+
+串为一个单命令入口，便于服务器上批量跑实验。
+
+对应主流程函数也增加了：
+
+- `run_pipeline(...)`
+
+涉及文件：
+
+- `scripts/run_pipeline.py`
+- `src/cegsr/workflows.py`
+
+#### 改动 D：服务器实验脚本自动生成
+
+增加了：
+
+- `scripts/setup_experiment.py`
+- `src/cegsr/launchers.py`
+
+会根据 profile 自动生成：
+
+- `prepare_data.sh`
+- `launch_inference_server.sh`
+- `run_pipeline.sh`
+- `run_ablation.sh`
+
+这一步的意义不是“多写几个脚本”，而是把原本靠记忆和手工拼接的服务器命令固化下来，降低后续多次实验时的认知负担和操作风险。
+
+#### 改动 E：双卡 DDP 训练脚本导出
+
+在训练导出阶段增加了 `distributed` 配置读取，自动生成：
+
+- `run_llamafactory.sh`
+- `run_llamafactory_ddp.sh`
+
+后者会写入：
+
+- `CUDA_VISIBLE_DEVICES`
+- `FORCE_TORCHRUN`
+- `NPROC_PER_NODE`
+- `MASTER_ADDR`
+- `MASTER_PORT`
+
+涉及文件：
+
+- `src/cegsr/training/llamafactory_adapter.py`
+
+这一步是为后续 `14B` 训练铺路，但本轮还没有真正启动大规模训练。
+
+#### 改动 F：vLLM 兼容性修复
+
+在服务器上第一次启动 vLLM 时，遇到了两个真实问题：
+
+1. 早期启动脚本使用了 `vllm` CLI 参数 `--swap-space 8`，而当前服务器上的 `vllm==0.18.1` 不接受该参数；
+2. pipeline 启动前的健康检查访问 `/v1/models` 时未携带鉴权头，导致虽然服务已启动，但探活返回 `401 Unauthorized`。
+
+因此做了两项兼容修复：
+
+- 去掉不兼容的 `--swap-space`
+- 健康检查带上 `Authorization: Bearer EMPTY`
+
+涉及文件：
+
+- `src/cegsr/launchers.py`
+- `configs/profiles/dual_4090_vllm.yaml`
+
+这两处修复都是“运行兼容性修复”，而不是方法变更。
+
+### 9.3 本轮实际运行命令
+
+#### 第一步：生成服务器脚本
+
+```bash
+python scripts/setup_experiment.py --config configs/profiles/dual_4090_vllm.yaml
+```
+
+生成结果：
+
+- `outputs/dual_4090/prepare_data.sh`
+- `outputs/dual_4090/launch_inference_server.sh`
+- `outputs/dual_4090/run_pipeline.sh`
+- `outputs/dual_4090/run_ablation.sh`
+
+#### 第二步：准备评测数据
+
+```bash
+bash outputs/dual_4090/prepare_data.sh
+```
+
+实际数据准备结果：
+
+- `output_path = outputs/data/reasoning_mix_eval.jsonl`
+- `num_rows = 300`
+
+但要特别注意，本轮并不是完整 benchmark mix，而是一个“退化后的三数据集子集”：
+
+- `commonsense_qa = 100`
+- `ai2_arc = 100`
+- `pubmed_qa = 100`
+
+另外两个来源被跳过：
+
+- `gsm8k`: `skipped: ValueError`
+- `boolq`: `skipped: HfHubHTTPError`
+
+因此，本轮所有结果都只能解读为：
+
+> 在当前服务器环境下，对 `commonsense_qa + ai2_arc + pubmed_qa` 三数据集、共 300 条样本的结果。
+
+不能直接与完整 mix 的旧结果做严格横向比较。
+
+#### 第三步：启动双卡 vLLM 服务
+
+```bash
+bash outputs/dual_4090/launch_inference_server.sh
+```
+
+从服务日志可确认：
+
+- `vllm version = 0.18.1`
+- 模型路径：`/home/fyk/models/Qwen/Qwen2.5-7B-Instruct`
+- `tensor_parallel_size = 2`
+- 服务地址：`http://127.0.0.1:8000`
+- OpenAI-compatible 路由已成功注册，包括：
+  - `/v1/models`
+  - `/v1/chat/completions`
+
+这里需要强调一个运行层判断：
+
+> 服务器外网 IP `172.31.162.126` 并不是当前问题的关键。因为推理服务和实验主进程都在同一台服务器本机运行，所以使用 `127.0.0.1:8000` 是正确的。之前出现的 `Connection refused` 并不是 IP 错误，而是因为 vLLM 服务尚未成功启动；而后续出现的 `401` 也不是服务故障，而是鉴权头未带导致的正常拒绝。
+
+#### 第四步：运行完整 pipeline
+
+```bash
+bash outputs/dual_4090/run_pipeline.sh
+```
+
+主流程耗时：
+
+- `Collect 300`: 约 `15m 35s`
+- `Credit 300`: 近乎瞬时
+- `Repair 300`: 约 `3m 17s`
+
+输出文件：
+
+- `outputs/dual_4090/raw.jsonl`
+- `outputs/dual_4090/annotated.jsonl`
+- `outputs/dual_4090/repaired.jsonl`
+- `outputs/dual_4090/graph`
+- `outputs/dual_4090/training_data`
+- `outputs/dual_4090/eval`
+
+#### 第五步：对 raw / annotated 做单独评测
+
+```bash
+python scripts/run_eval.py --episodes outputs/dual_4090/raw.jsonl --output-dir outputs/dual_4090/eval_raw
+python scripts/run_eval.py --episodes outputs/dual_4090/annotated.jsonl --output-dir outputs/dual_4090/eval_annotated
+```
+
+这一组命令非常重要，因为它用同一数据子集回答了：
+
+> 收益到底来自 credit 本身，还是来自 repair？
+
+### 9.4 本轮核心结果
+
+#### 结果 A：raw / annotated / repaired 三段对照
+
+`raw` 结果：
+
+- `accuracy = 0.8033`
+- `exact_match = 0.2467`
+- `commonsense_qa = 0.82`
+- `ai2_arc = 0.85`
+- `pubmed_qa = 0.74`
+
+`annotated` 结果：
+
+- `accuracy = 0.8033`
+- `exact_match = 0.2467`
+- 与 `raw` 完全一致
+
+`repaired` 结果：
+
+- `accuracy = 0.8533`
+- `exact_match = 0.2633`
+- `repair_coverage = 0.1967`
+- `repair_success_rate = 0.2542`
+- `num_changed_repairs = 59`
+- `commonsense_qa = 0.86`
+- `ai2_arc = 0.91`
+- `pubmed_qa = 0.79`
+
+#### 结果 B：增益拆解
+
+从同集对照可以直接得到：
+
+- `annotated - raw = 0`
+- `repaired - raw = +0.0500 accuracy`
+- `repaired - raw = +0.0166 exact_match`
+
+按数据集看：
+
+- `commonsense_qa: 0.82 -> 0.86`，提升 `+0.04`
+- `ai2_arc: 0.85 -> 0.91`，提升 `+0.06`
+- `pubmed_qa: 0.74 -> 0.79`，提升 `+0.05`
+
+### 9.5 本轮结果说明了什么
+
+#### 结论 1：本轮不需要继续大范围修改方法代码
+
+原因很明确：
+
+1. 双卡服务器上的整条 pipeline 已经跑通；
+2. `raw == annotated`，说明 fine-grained credit 这一阶段本身不会直接改变输出结果；
+3. `repaired > raw`，而且是稳定的 `+5` 个点 accuracy 提升，说明当前的主要可观测收益仍然来自 selective repair；
+4. 这与上一轮日志中形成的主判断完全一致，没有出现推翻式新证据。
+
+因此，当前不值得再进行大范围方法重构。继续大改主代码，收益很可能低于风险。
+
+#### 结论 2：服务器双卡 vLLM 版本已经形成新的“实验运行基线”
+
+这次最重要的工程意义是：
+
+- 不再依赖本地单卡 `hf_local`
+- 不再需要每个脚本单独重新加载模型
+- 可以把 `7B + vLLM + TP=2` 作为后续 collect / repair / evaluation 的默认运行基线
+
+这对“后续继续进行多次实验”非常关键，因为真正耗时间的不是单次推理质量，而是每轮实验的启动成本和稳定性。
+
+#### 结论 3：当前实验收益仍然主要来自 repair，而不是 graph 或 credit 本身
+
+这次三段对照给出了非常干净的证据：
+
+- `credit` 只是打标签，不直接提升最终正确率；
+- 真正改变输出的是 `repair`；
+- 因而“verifier-aware fine-grained credit + selective repair”仍然是当前最可信的论文主线；
+- graph 在这轮里依然只是被构建出来，还没有被证明是当前稳定收益来源。
+
+#### 结论 4：本轮结果尚不能作为完整论文主表
+
+因为：
+
+- `gsm8k` 缺失
+- `boolq` 缺失
+
+所以这轮结果更适合被定义为：
+
+> 双卡服务器运行兼容验证 + 三数据集子集上的方法对照实验
+
+而不是“最终完整 benchmark 主结果”。
+
+### 9.6 这一轮之后，最合理的下一步
+
+#### 推荐立即做的事
+
+1. 保留这套 `dual_4090_vllm` 作为默认服务器运行 profile；
+2. 在当前三数据集子集上，如有需要，再跑一次 `run_ablation.sh` 形成统一协议下的同集消融表；
+3. 单独排查 `gsm8k` 与 `boolq` 数据准备失败原因，尽快恢复完整 mix。
+
+#### 暂时不推荐做的事
+
+1. 继续大范围重写方法代码；
+2. 重新折腾 graph retrieval 主线；
+3. 在未恢复完整 benchmark 之前，过早把这次 `0.8533` 写成最终论文主结果。
+
+### 9.7 本轮一句话总结
+
+如果只保留一句总结，这一轮最重要的结论是：
+
+> 双 RTX4090 + vLLM 的服务器运行链路已经稳定跑通；在当前三数据集子集上，`raw == annotated < repaired`，再次证明当前 CEG-SR 的直接收益主要来自 selective repair，而不是 credit 标注本身或 graph retrieval。
