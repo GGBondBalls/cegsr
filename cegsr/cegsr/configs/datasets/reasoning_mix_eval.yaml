@@ -1,0 +1,11 @@
+recipe: reasoning_mix
+split: validation
+max_per_source: 100
+seed: 42
+output_path: outputs/data/reasoning_mix_eval.jsonl
+include_sources:
+  - gsm8k
+  - commonsense_qa
+  - ai2_arc
+  - boolq
+  - pubmed_qa

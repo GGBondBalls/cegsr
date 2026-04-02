@@ -1,0 +1,6 @@
+backend:
+  kind: sglang
+  model: /path/or/model-id
+  base_url: ${SGLANG_BASE_URL}
+  api_key: ${SGLANG_API_KEY}
+  extra_body: {}

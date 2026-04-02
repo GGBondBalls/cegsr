@@ -1,0 +1,5 @@
+{"sample_id":"ex1","question":"What is 7 + 5?","answer":"12","context":"","choices":[],"task_type":"qa","metadata":{}}
+{"sample_id":"ex2","question":"Compute 9 * 3.","answer":"27","context":"","choices":[],"task_type":"qa","metadata":{}}
+{"sample_id":"ex3","question":"What is (8 + 4) / 3?","answer":"4","context":"","choices":[],"task_type":"qa","metadata":{}}
+{"sample_id":"ex4","question":"Evaluate 15 - 6 + 2.","answer":"11","context":"","choices":[],"task_type":"qa","metadata":{}}
+{"sample_id":"ex5","question":"What is 2 ** 3 + 1?","answer":"9","context":"","choices":[],"task_type":"qa","metadata":{}}

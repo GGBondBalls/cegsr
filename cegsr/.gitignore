@@ -1,0 +1,45 @@
+# Operating system and editor files
+.DS_Store
+Thumbs.db
+.vscode/
+.idea/
+*.swp
+*.swo
+
+# Environment and local secrets
+.env
+.env.*
+.venv/
+venv/
+env/
+ENV/
+
+# Python cache and test artifacts
+__pycache__/
+*.py[cod]
+*.pyo
+*.pyd
+.pytest_cache/
+.mypy_cache/
+.ruff_cache/
+.hypothesis/
+.tox/
+.nox/
+.coverage
+.coverage.*
+htmlcov/
+
+# Build and packaging artifacts
+build/
+dist/
+.eggs/
+*.egg-info/
+pip-wheel-metadata/
+
+# Notebook checkpoints
+.ipynb_checkpoints/
+
+# Project-generated outputs and archives
+cegsr/outputs/**
+!cegsr/outputs/.gitkeep
+cegsr/*.tar.gz

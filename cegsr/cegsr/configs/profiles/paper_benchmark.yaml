@@ -1,0 +1,11 @@
+_base_: ../base.yaml
+
+project:
+  output_dir: outputs/paper_benchmark
+
+task:
+  dataset_path: outputs/data/paper_reasoning_eval.jsonl
+  prepare_config: configs/datasets/paper_reasoning_eval.yaml
+
+experience:
+  graph_dir: outputs/paper_benchmark/graph

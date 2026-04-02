@@ -1,0 +1,3 @@
+pipeline:
+  step: annotate
+  trajectory_level_only: false
