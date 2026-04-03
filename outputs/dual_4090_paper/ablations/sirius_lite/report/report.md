@@ -1,0 +1,72 @@
+# Run Summary
+
+## Aggregate Metrics
+- **num_episodes**: 700
+- **accuracy**: 0.9543
+- **exact_match**: 0.2986
+- **mcq_accuracy**: 0.8229
+- **repair_coverage**: 0.0
+- **repair_success_rate**: 0.0
+- **num_changed_repairs**: 0
+- **average_trajectory_length**: 4.0
+- **average_input_tokens**: 2016.1714
+- **average_output_tokens**: 346.6243
+- **retrieval_hit_usefulness_proxy**: 0.0
+- **graph_num_nodes**: 0
+- **graph_num_edges**: 0
+- **training_data_size_by_role::planner**: 700
+- **training_data_size_by_role::solver**: 700
+- **training_data_size_by_role::verifier**: 700
+- **training_data_size_by_role::summarizer**: 700
+- **dataset_accuracy::college_physics**: 0.97
+- **dataset_count::college_physics**: 100
+- **dataset_accuracy::college_chemistry**: 0.93
+- **dataset_count::college_chemistry**: 100
+- **dataset_accuracy::pubmed_qa**: 0.98
+- **dataset_count::pubmed_qa**: 100
+- **dataset_accuracy::gsm8k**: 0.92
+- **dataset_count::gsm8k**: 100
+- **dataset_accuracy::commonsense_qa**: 0.96
+- **dataset_count::commonsense_qa**: 100
+- **dataset_accuracy::ai2_arc**: 0.98
+- **dataset_count::ai2_arc**: 100
+- **dataset_accuracy::boolq**: 0.94
+- **dataset_count::boolq**: 100
+- **category_accuracy::college_physics**: 0.97
+- **category_accuracy::college_chemistry**: 0.93
+- **category_accuracy::biomedical_qa**: 0.98
+- **category_accuracy::math_word_problem**: 0.92
+- **category_accuracy::commonsense**: 0.96
+- **category_accuracy::science_mcq**: 0.98
+- **category_accuracy::reading_comprehension_yesno**: 0.94
+
+## Dataset Breakdown
+- college_physics: 0.97
+- college_chemistry: 0.93
+- pubmed_qa: 0.98
+- gsm8k: 0.92
+- commonsense_qa: 0.96
+- ai2_arc: 0.98
+- boolq: 0.94
+
+## Error Cases
+- sample_id=college_physics_test_9 | dataset=college_physics | pred=D. 100 mm | gold=A. 10:00 PM
+- sample_id=college_physics_test_51 | dataset=college_physics | pred=C. (3/2) k T | gold=D. 3kT
+- sample_id=college_physics_test_68 | dataset=college_physics | pred=A. 0.4c. | gold=B. 0.5c
+- sample_id=college_chemistry_test_21 | dataset=college_chemistry | pred=B. The hydrogen atom undergoes rapid intermolecular exchange. | gold=D. Both 35Cl and 37Cl have electric quadrupole moments.
+- sample_id=college_chemistry_test_24 | dataset=college_chemistry | pred=D. Zn2+ | gold=B. Cr3+
+- sample_id=college_chemistry_test_27 | dataset=college_chemistry | pred=A. I only. | gold=D. I, II, and III
+- sample_id=college_chemistry_test_53 | dataset=college_chemistry | pred=A. Na2CO3 | gold=D. NaCl
+- sample_id=college_chemistry_test_63 | dataset=college_chemistry | pred=B. 26.75 x 10^7 T-1 s-1 | gold=C. 7.081 x 10^7 T-1 s-1
+- sample_id=college_chemistry_test_76 | dataset=college_chemistry | pred=B. 19F | gold=A. 17O
+- sample_id=college_chemistry_test_98 | dataset=college_chemistry | pred=C. steady state concentration of free radical intermediates is often too low to enable direct detection by EPR. | gold=D. detection of spin adducts requires lower power than direct detection of radical intermediates
+- sample_id=pubmedqa_train_64 | dataset=pubmed_qa | pred=C. maybe. | gold=no
+- sample_id=pubmedqa_train_84 | dataset=pubmed_qa | pred=B. no. | gold=yes
+- sample_id=gsm8k_test_0 | dataset=gsm8k | pred=B. 51.33 WPM | gold=52
+- sample_id=gsm8k_test_3 | dataset=gsm8k | pred=A. 4 blue and 6 red shoe boxes are left. | gold=10
+- sample_id=gsm8k_test_8 | dataset=gsm8k | pred=A. Joe does not have enough money to buy both items after the discount. | gold=8
+- sample_id=gsm8k_test_18 | dataset=gsm8k | pred=C. He will need 8 packs of gum to last him 30 days. | gold=8
+- sample_id=gsm8k_test_26 | dataset=gsm8k | pred=22. The fifth worker produces 22 toys per hour. | gold=18
+- sample_id=gsm8k_test_34 | dataset=gsm8k | pred=A. 1 hour. | gold=2
+- sample_id=gsm8k_test_42 | dataset=gsm8k | pred=C. 240 apples | gold=150
+- sample_id=gsm8k_test_43 | dataset=gsm8k | pred=C. 14.00 | gold=7

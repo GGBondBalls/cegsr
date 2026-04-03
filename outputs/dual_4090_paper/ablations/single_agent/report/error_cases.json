@@ -1,0 +1,142 @@
+[
+  {
+    "sample_id": "college_physics_test_0",
+    "dataset_name": "college_physics",
+    "pred": "When the gas is present, the optical path length increases by a factor of \\( n \\), so the new optical path length \\( L_{\\text{",
+    "gold": "B. 1.00032",
+    "question": "A gas cell with an optical path length of 10 cm is placed in one arm of a Michelson interferometer. If the light source for the interferometer is a laser with wavelength 632.2 nm, then 100 fringes are counted as the gas cell is evacuated. What is the index of refraction of the original gas?"
+  },
+  {
+    "sample_id": "college_physics_test_1",
+    "dataset_name": "college_physics",
+    "pred": "\\[ W_2 = \\frac{1",
+    "gold": "D. 8k",
+    "question": "A spring of force constant k is stretched a certain distance. It takes twice as much work to stretch a second spring by half this distance. The force constant of the second spring is"
+  },
+  {
+    "sample_id": "college_physics_test_2",
+    "dataset_name": "college_physics",
+    "pred": ":",
+    "gold": "A. 5",
+    "question": "A single-electron atom has the electron in the l = 2 state. The number of allowed values of the quantum number m_l is"
+  },
+  {
+    "sample_id": "college_physics_test_3",
+    "dataset_name": "college_physics",
+    "pred": "\\[ 2 =",
+    "gold": "D. (3^(1/2))mc",
+    "question": "If the total energy of a particle of mass m is equal to twice its rest energy, then the magnitude of the particle’s relativistic momentum is"
+  },
+  {
+    "sample_id": "college_physics_test_4",
+    "dataset_name": "college_physics",
+    "pred": "Given that the total energy to remove both electrons is 79.0 eV, and without additional information on the exact energy difference, we can infer that the energy required to remove the first electron is less than half of 79.",
+    "gold": "A. 24.6 eV",
+    "question": "The energy required to remove both electrons from the helium atom in its ground state is 79.0 eV. How much energy is required to ionize helium (i.e., to remove one electron)?"
+  },
+  {
+    "sample_id": "college_physics_test_5",
+    "dataset_name": "college_physics",
+    "pred": "\\gamma = \\frac{1}{\\sqrt{1 - \\frac{(0.",
+    "gold": "D. 450 m",
+    "question": "A particle decays in 2.0 ms in its rest frame. If the same particle moves at v=0.60c in the lab frame, how far will it travel in the lab before decaying?"
+  },
+  {
+    "sample_id": "college_physics_test_6",
+    "dataset_name": "college_physics",
+    "pred": "where \\( \\lambda_{\\text{oil}} \\) is the wavelength of light in the oil layer, and \\(",
+    "gold": "C. 600 nm",
+    "question": "White light is normally incident on a puddle of water (index of refraction 1.33). A thin (500 nm) layer of oil (index of refraction 1.5) floats on the surface of the puddle. Of the following, the most strongly reflected wavelength is"
+  },
+  {
+    "sample_id": "college_physics_test_7",
+    "dataset_name": "college_physics",
+    "pred": "\\[ \\Delta KE",
+    "gold": "C. 3 N",
+    "question": "A 10 kg box slides horizontally without friction at a speed of 1 m/s. At one point, a constant force is applied to the box in the direction of its motion. The box travels 5 m with the constant force applied. The force is then removed, leaving the box with a speed of 2 m/s. Which of the following gives the magnitude of the applied force?"
+  },
+  {
+    "sample_id": "college_physics_test_8",
+    "dataset_name": "college_physics",
+    "pred": "- This is",
+    "gold": "D. Fermions have antisymmetric wave functions and obey the Pauli exclusion principle.",
+    "question": "Which of the following statements about bosons and/or fermions is true?"
+  },
+  {
+    "sample_id": "college_physics_test_9",
+    "dataset_name": "college_physics",
+    "pred": "\\lambda_{\\text{max}} = \\frac{b}{T} = \\frac{2.89777 \\times 10^{-3}",
+    "gold": "A. 10:00 PM",
+    "question": "The surface of the Sun has a temperature close to 6,000 K and it emits a blackbody (Planck) spectrum that reaches a maximum near 500 nm. For a body with a surface temperature close to 300 K, at what wavelength would the thermal spectrum reach a maximum?"
+  },
+  {
+    "sample_id": "college_physics_test_10",
+    "dataset_name": "college_physics",
+    "pred": "\\Phi = B \\cdot A",
+    "gold": "D. 10 V",
+    "question": "A magnetic field is directed perpendicular to the plane of a circular coil of area 0.2 m^2 and 250 turns. If the magnetic field is increased from 0.01 T to 0.06 T during a time interval of 0.25 s, the average induced EMF in the coil is"
+  },
+  {
+    "sample_id": "college_physics_test_11",
+    "dataset_name": "college_physics",
+    "pred": ":",
+    "gold": "D. tetrahedron",
+    "question": "In the diamond structure of elemental carbon, the nearest neighbors of each C atom lie at the corners of a"
+  },
+  {
+    "sample_id": "college_physics_test_12",
+    "dataset_name": "college_physics",
+    "pred": "\\[ \\text{COP} = \\frac{300.15}{300.15 - 280.15} = \\frac{300.15",
+    "gold": "B. 1,000 J",
+    "question": "A heat pump is to extract heat from an outdoor environment at 7°C and heat the environment indoors to 27°C. For each 15,000 J of heat delivered indoors, the smallest amount of work that must be supplied to the heat pump is approximately"
+  },
+  {
+    "sample_id": "college_physics_test_13",
+    "dataset_name": "college_physics",
+    "pred": "- The mean (\\( \\mu \\)) of the number of detections is",
+    "gold": "D. an average of 10 times, with an rms deviation of about 3",
+    "question": "The quantum efficiency of a photon detector is 0.1. If 100 photons are sent into the detector, one after the other, the detector will detect photons"
+  },
+  {
+    "sample_id": "college_physics_test_14",
+    "dataset_name": "college_physics",
+    "pred": "\\[ a = \\sqrt{a_c^2 + a_t^2} = \\sqrt{10^",
+    "gold": "C. 45°",
+    "question": "A particle is constrained to move in a circle with a 10-meter radius. At one instant, the particle’s speed is 10 meters per second and is increasing at a rate of 10 meters per second squared. The angle between the particle’s velocity and acceleration vectors is"
+  },
+  {
+    "sample_id": "college_physics_test_15",
+    "dataset_name": "college_physics",
+    "pred": "- It has no electric charge and no rest mass (or very",
+    "gold": "A. Electron",
+    "question": "The negative muon, mu^-, has properties most similar to which of the following?"
+  },
+  {
+    "sample_id": "college_physics_test_16",
+    "dataset_name": "college_physics",
+    "pred": "\\[ R = \\frac{501 \\, \\text{nm}}{2 \\, \\text{nm",
+    "gold": "B. 250",
+    "question": "A grating spectrometer can just barely resolve two wavelengths of 500 nm and 502 nm, respectively. Which of the following gives the resolving power of the spectrometer?"
+  },
+  {
+    "sample_id": "college_physics_test_17",
+    "dataset_name": "college_physics",
+    "pred": "\\[ f' = 0.97 \\times 440 \\text{ Hz",
+    "gold": "B. 427 Hz",
+    "question": "At 20°C, a pipe open at both ends resonates at a frequency of 440 hertz. At what frequency does the same pipe resonate on a particularly cold day when the speed of sound is 3 percent lower than it would be at 20°C ?"
+  },
+  {
+    "sample_id": "college_physics_test_18",
+    "dataset_name": "college_physics",
+    "pred": "\\[ \\left(",
+    "gold": "B. 0.60c",
+    "question": "A rod measures 1.00 m in its rest system. How fast must an observer move parallel to the rod to measure its length to be 0.80 m?"
+  },
+  {
+    "sample_id": "college_physics_test_19",
+    "dataset_name": "college_physics",
+    "pred": "2. **Constructive Interference Condition**: For constructive interference, the path difference must be an odd multiple of half the wavelength in the film. Since the light reflects from both the top and bottom surfaces of the film, the total path difference is twice the thickness of the",
+    "gold": "B. 200 nm",
+    "question": "Blue light of wavelength 480 nanometers is most strongly reflected off a thin film of oil on a glass slide when viewed near normal incidence. Assuming that the index of refraction of the oil is 1.2 and that of the glass is 1.6, what is the minimum thickness of the oil film (other than zero) ?"
+  }
+]

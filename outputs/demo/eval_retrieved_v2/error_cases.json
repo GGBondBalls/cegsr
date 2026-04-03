@@ -1,0 +1,142 @@
+[
+  {
+    "sample_id": "commonsenseqa_validation_0",
+    "dataset_name": "commonsense_qa",
+    "pred": "E. hall",
+    "gold": "D. living room",
+    "question": "Where would you keep a rug near your front door?"
+  },
+  {
+    "sample_id": "commonsenseqa_validation_11",
+    "dataset_name": "commonsense_qa",
+    "pred": "A. ocean",
+    "gold": "C. water",
+    "question": "Where is seaweed usually found alive?"
+  },
+  {
+    "sample_id": "commonsenseqa_validation_16",
+    "dataset_name": "commonsense_qa",
+    "pred": "E. property",
+    "gold": "B. neighborhood",
+    "question": "They children loved having a back yard, and the parents loved that it was a safe what?"
+  },
+  {
+    "sample_id": "commonsenseqa_validation_18",
+    "dataset_name": "commonsense_qa",
+    "pred": "B. theater",
+    "gold": "E. school",
+    "question": "The architect thought that a mezzanine would look good, but the planning committee rejected it.  They told the architect that they felt it was a potential hazard given the ages of the people who would be using it.  What might they be designing?"
+  },
+  {
+    "sample_id": "commonsenseqa_validation_20",
+    "dataset_name": "commonsense_qa",
+    "pred": "D. walk",
+    "gold": "A. listen to radio",
+    "question": "What would I be doing while going to work and walking?"
+  },
+  {
+    "sample_id": "commonsenseqa_validation_24",
+    "dataset_name": "commonsense_qa",
+    "pred": "A. surprise",
+    "gold": "C. annoyance",
+    "question": "What would it be if they get a surprising show over and over?"
+  },
+  {
+    "sample_id": "commonsenseqa_validation_27",
+    "dataset_name": "commonsense_qa",
+    "pred": "D. gain weight.",
+    "gold": "C. augment",
+    "question": "The surgeon's clients had begun to reduce, it seemed girls no longer want to what?"
+  },
+  {
+    "sample_id": "commonsenseqa_validation_29",
+    "dataset_name": "commonsense_qa",
+    "pred": "C. prehistory",
+    "gold": "E. ancient times",
+    "question": "When did mammoth's live?"
+  },
+  {
+    "sample_id": "commonsenseqa_validation_31",
+    "dataset_name": "commonsense_qa",
+    "pred": "A. music school",
+    "gold": "C. neighbor's house",
+    "question": "Where can you go to use a piano in your neighborhood if you don't have one?"
+  },
+  {
+    "sample_id": "commonsenseqa_validation_34",
+    "dataset_name": "commonsense_qa",
+    "pred": "E. direct sunlight",
+    "gold": "A. full sunlight",
+    "question": "There was no shade for Jenny.  She was forced to lie there exposed to what?"
+  },
+  {
+    "sample_id": "commonsenseqa_validation_37",
+    "dataset_name": "commonsense_qa",
+    "pred": "C. buying vegetables",
+    "gold": "A. buy food",
+    "question": "What do you do when you're going to market?"
+  },
+  {
+    "sample_id": "commonsenseqa_validation_39",
+    "dataset_name": "commonsense_qa",
+    "pred": "C. satisfaction",
+    "gold": "D. confident",
+    "question": "He was beginning to regret taking the fight when he saw how what his opponent was?"
+  },
+  {
+    "sample_id": "commonsenseqa_validation_45",
+    "dataset_name": "commonsense_qa",
+    "pred": "B. better themselves",
+    "gold": "A. face problems",
+    "question": "What do people need to do to change their lives?"
+  },
+  {
+    "sample_id": "commonsenseqa_validation_60",
+    "dataset_name": "commonsense_qa",
+    "pred": "B. internet",
+    "gold": "D. library",
+    "question": "Where is known to be a wealth of information?"
+  },
+  {
+    "sample_id": "commonsenseqa_validation_61",
+    "dataset_name": "commonsense_qa",
+    "pred": "D. education",
+    "gold": "A. theater",
+    "question": "In the building where James worked there was a small mezzanine in the auditorium to make more space for seats.  Where might James work?"
+  },
+  {
+    "sample_id": "commonsenseqa_validation_62",
+    "dataset_name": "commonsense_qa",
+    "pred": "C. getting wet",
+    "gold": "B. see beautiful views",
+    "question": "Nature can be good and bad for the person who walks, what are some things?"
+  },
+  {
+    "sample_id": "commonsenseqa_validation_68",
+    "dataset_name": "commonsense_qa",
+    "pred": "A. serious",
+    "gold": "C. musical",
+    "question": "Sarah didn't like to play but she didn't want to be sedentary and bored, either, so she took up what?"
+  },
+  {
+    "sample_id": "commonsenseqa_validation_72",
+    "dataset_name": "commonsense_qa",
+    "pred": "E. heirlooms",
+    "gold": "A. family tree",
+    "question": "James's nice asked him about her grandfather. She was interested in learning about what?"
+  },
+  {
+    "sample_id": "commonsenseqa_validation_77",
+    "dataset_name": "commonsense_qa",
+    "pred": "D. teach",
+    "gold": "B. advance knowledge",
+    "question": "Computers have allowed everybody to answer questions they have quickly, but still we seem to be getting duller despite access to this what?"
+  },
+  {
+    "sample_id": "commonsenseqa_validation_81",
+    "dataset_name": "commonsense_qa",
+    "pred": "E. arousal",
+    "gold": "C. shortness of breath",
+    "question": "What happens if someone kisses too long?"
+  }
+]

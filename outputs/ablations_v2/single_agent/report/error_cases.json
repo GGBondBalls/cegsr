@@ -1,0 +1,142 @@
+[
+  {
+    "sample_id": "commonsenseqa_validation_0",
+    "dataset_name": "commonsense_qa",
+    "pred": "A rug near the front door is typically kept in the hallway to provide warmth and softness as one enters or exits the house, especially during colder weather. The other options do not make sense for keeping a rug near a front door.",
+    "gold": "D. living room",
+    "question": "Where would you keep a rug near your front door?"
+  },
+  {
+    "sample_id": "commonsenseqa_validation_1",
+    "dataset_name": "commonsense_qa",
+    "pred": "C. Cave",
+    "gold": "D. cabinet",
+    "question": "Danny found an old film in a sealed what?"
+  },
+  {
+    "sample_id": "commonsenseqa_validation_9",
+    "dataset_name": "commonsense_qa",
+    "pred": ":",
+    "gold": "D. stillness",
+    "question": "During the winter hunt he could hear every motion in the woods, this was because of the what of everything?"
+  },
+  {
+    "sample_id": "commonsenseqa_validation_10",
+    "dataset_name": "commonsense_qa",
+    "pred": ":",
+    "gold": "B. at hotel",
+    "question": "Where can a bath towel be borrowed?"
+  },
+  {
+    "sample_id": "commonsenseqa_validation_11",
+    "dataset_name": "commonsense_qa",
+    "pred": "A. ocean",
+    "gold": "C. water",
+    "question": "Where is seaweed usually found alive?"
+  },
+  {
+    "sample_id": "commonsenseqa_validation_12",
+    "dataset_name": "commonsense_qa",
+    "pred": "E. Roof - This would only allow him to watch from above, which isn't necessarily better than being outside if he wants to see close-up details of the birds' nests.",
+    "gold": "C. forest",
+    "question": "David watched some nesting birds using his binoculars while on vacation.  Where might David be?."
+  },
+  {
+    "sample_id": "commonsenseqa_validation_16",
+    "dataset_name": "commonsense_qa",
+    "pred": "The context provided does not give enough information to determine which specific type of property is being referred to. However, in general terms, \"back yard\" can be associated with various types of properties such as houses or apartments. The most common association for a backyard is likely a residential property like a house. Therefore, among the given choices, \"property\" is the most appropriate answer based on the context.",
+    "gold": "B. neighborhood",
+    "question": "They children loved having a back yard, and the parents loved that it was a safe what?"
+  },
+  {
+    "sample_id": "commonsenseqa_validation_19",
+    "dataset_name": "commonsense_qa",
+    "pred": "This option best fits the phrasing \"Steve thought that it was possible\" and aligns with the statement \"but he agreed that it was what?\" suggesting an agreement to something less than what Steve initially believed was possible.",
+    "gold": "C. unlikely",
+    "question": "Steve thought that it was possible, but he agreed that it was what?"
+  },
+  {
+    "sample_id": "commonsenseqa_validation_20",
+    "dataset_name": "commonsense_qa",
+    "pred": "D. walk",
+    "gold": "A. listen to radio",
+    "question": "What would I be doing while going to work and walking?"
+  },
+  {
+    "sample_id": "commonsenseqa_validation_23",
+    "dataset_name": "commonsense_qa",
+    "pred": "Using a computer to communicate with someone like a granddaughter can sometimes lead to eye strain or headaches if the user spends too much time in front of the screen without proper breaks. However, it's not typically described as causing \"a program\" or an \"ocean.\" The other options don't fit the context provided.",
+    "gold": "C. happiness",
+    "question": "If a person is using a computer to talk to their granddaughter, what might the computer cause for them?"
+  },
+  {
+    "sample_id": "commonsenseqa_validation_27",
+    "dataset_name": "commonsense_qa",
+    "pred": "Since we don't have enough context to choose from among these options, none of them can be definitively identified as the correct answer without further information.",
+    "gold": "C. augment",
+    "question": "The surgeon's clients had begun to reduce, it seemed girls no longer want to what?"
+  },
+  {
+    "sample_id": "commonsenseqa_validation_29",
+    "dataset_name": "commonsense_qa",
+    "pred": "D. prehistoric times.",
+    "gold": "E. ancient times",
+    "question": "When did mammoth's live?"
+  },
+  {
+    "sample_id": "commonsenseqa_validation_32",
+    "dataset_name": "commonsense_qa",
+    "pred": "Many people moved from country estates to row houses in cities because it was cheaper and more convenient to live in urban areas compared to rural settings. The other options do not directly relate to the context of moving from country estates to row houses.",
+    "gold": "D. city",
+    "question": "Many people wanted to leave their country estates for row houses, what did they need to move to?"
+  },
+  {
+    "sample_id": "commonsenseqa_validation_33",
+    "dataset_name": "commonsense_qa",
+    "pred": "A. open eyes",
+    "gold": "B. go to movies",
+    "question": "To see new films you must?"
+  },
+  {
+    "sample_id": "commonsenseqa_validation_34",
+    "dataset_name": "commonsense_qa",
+    "pred": "The question states that \"There was no shade for Jenny,\" which implies she was not protected from the sun. Therefore, the most appropriate answer is \"direct sunlight\" as it directly corresponds to the lack of shade and exposure to the sun's rays.",
+    "gold": "A. full sunlight",
+    "question": "There was no shade for Jenny.  She was forced to lie there exposed to what?"
+  },
+  {
+    "sample_id": "commonsenseqa_validation_35",
+    "dataset_name": "commonsense_qa",
+    "pred": "When traveling, having sufficient funds to cover unexpected costs is crucial for financial stability and peace of mind during the trip. This ensures that you can handle any unforeseen expenses without compromising your ability to enjoy your travels or maintain your daily routine.",
+    "gold": "E. have money",
+    "question": "When you travel you should what in case of unexpected costs?"
+  },
+  {
+    "sample_id": "commonsenseqa_validation_36",
+    "dataset_name": "commonsense_qa",
+    "pred": "Jesse enjoys remembering the past to help him understand it, and understanding the past can aid in preparing for future situations or events.",
+    "gold": "E. being prepared",
+    "question": "Jesse  enjoyed remembering the past because he helped him understand it.  And understanding the past helped him with doing what?"
+  },
+  {
+    "sample_id": "commonsenseqa_validation_37",
+    "dataset_name": "commonsense_qa",
+    "pred": "This option encompasses multiple aspects of what might be done at a market without being too broad or specific to a particular type of market activity.",
+    "gold": "A. buy food",
+    "question": "What do you do when you're going to market?"
+  },
+  {
+    "sample_id": "commonsenseqa_validation_39",
+    "dataset_name": "commonsense_qa",
+    "pred": ":",
+    "gold": "D. confident",
+    "question": "He was beginning to regret taking the fight when he saw how what his opponent was?"
+  },
+  {
+    "sample_id": "commonsenseqa_validation_42",
+    "dataset_name": "commonsense_qa",
+    "pred": ":",
+    "gold": "B. snowflake",
+    "question": "The water in clouds turn in to what when it gets cold?"
+  }
+]

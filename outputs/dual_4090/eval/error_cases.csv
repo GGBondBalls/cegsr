@@ -1,0 +1,21 @@
+sample_id,dataset_name,pred,gold,question
+commonsenseqa_validation_0,commonsense_qa,E. hall.,D. living room,Where would you keep a rug near your front door?
+commonsenseqa_validation_11,commonsense_qa,A. ocean.,C. water,Where is seaweed usually found alive?
+commonsenseqa_validation_18,commonsense_qa,B. theater.,E. school,"The architect thought that a mezzanine would look good, but the planning committee rejected it.  They told the architect that they felt it was a potential hazard given the ages of the people who would be using it.  What might they be designing?"
+commonsenseqa_validation_20,commonsense_qa,D. walk,A. listen to radio,What would I be doing while going to work and walking?
+commonsenseqa_validation_29,commonsense_qa,D. prehistoric times,E. ancient times,When did mammoth's live?
+commonsenseqa_validation_31,commonsense_qa,A. music school.,C. neighbor's house,Where can you go to use a piano in your neighborhood if you don't have one?
+commonsenseqa_validation_34,commonsense_qa,E. direct sunlight.,A. full sunlight,There was no shade for Jenny.  She was forced to lie there exposed to what?
+commonsenseqa_validation_45,commonsense_qa,B. better themselves,A. face problems,What do people need to do to change their lives?
+commonsenseqa_validation_60,commonsense_qa,B. internet,D. library,Where is known to be a wealth of information?
+commonsenseqa_validation_62,commonsense_qa,A. seeing bear.,B. see beautiful views,"Nature can be good and bad for the person who walks, what are some things?"
+commonsenseqa_validation_73,commonsense_qa,C. garments,D. expensive clothing,"If you wanted to show off silk, what item could it be on?"
+commonsenseqa_validation_79,commonsense_qa,A. england,B. new hampshire,John was an aristocratic fox hunter.  Where might he live?
+commonsenseqa_validation_84,commonsense_qa,C. his hand.,E. child's hand,James saw a kite flying in the sky.  He traced the string back to its origin and found it.  Where did the string begin?
+commonsenseqa_validation_88,commonsense_qa,D. shower stall.,A. bathtub,Where would you find a single shower curtain being used?
+arc_validation_13,ai2_arc,C. fewer snakes and fewer birds,A. more snakes and fewer birds,"An island has many kinds of birds, no native species of snakes, and few large predators. Brown snakes eat bird eggs. What is the most likely result of brown snakes being released accidentally on the island?"
+arc_validation_36,ai2_arc,A. 2NaOH + CaBr₂ -> Ca(OH)₂ + 2NaBr,D. 2AlCl_{3} + 3Mg -> 3MgCl_{2} + 2Al,Which equation is a balanced chemical equation?
+arc_validation_44,ai2_arc,B. oil and gas from underground reservoirs.,"D. minerals from mining gold, silver, and copper",The Humboldt River Basin is one of the most important sources of several nonrenewable resources. Which of these nonrenewable resources is produced from the Humboldt River Basin?
+arc_validation_52,ai2_arc,B. light,C. power,Which of the listed quantities is measured in a unit other than the joule?
+arc_validation_65,ai2_arc,C. studying lab procedures prior to conducting the experiment.,D. checking with your teacher on the procedure to dispose of chemicals,What is the best practice to follow when completing an experiment?
+arc_validation_75,ai2_arc,B. intense volcanic activity,C. cooler temperatures,Which event most likely allowed for the explosion of mammal diversity that occurred during the Cretaceous period?

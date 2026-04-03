@@ -1,0 +1,11 @@
+#!/usr/bin/env bash
+set -euo pipefail
+
+llamafactory-cli train outputs/dual_4090_paper/training_data/llamafactory_planner_lora.yaml
+llamafactory-cli train outputs/dual_4090_paper/training_data/llamafactory_planner_qlora.yaml
+llamafactory-cli train outputs/dual_4090_paper/training_data/llamafactory_solver_lora.yaml
+llamafactory-cli train outputs/dual_4090_paper/training_data/llamafactory_solver_qlora.yaml
+llamafactory-cli train outputs/dual_4090_paper/training_data/llamafactory_verifier_lora.yaml
+llamafactory-cli train outputs/dual_4090_paper/training_data/llamafactory_verifier_qlora.yaml
+llamafactory-cli train outputs/dual_4090_paper/training_data/llamafactory_summarizer_lora.yaml
+llamafactory-cli train outputs/dual_4090_paper/training_data/llamafactory_summarizer_qlora.yaml

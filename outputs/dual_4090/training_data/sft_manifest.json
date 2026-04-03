@@ -1,0 +1,6 @@
+{
+  "planner": "outputs/dual_4090/training_data/planner_sft.jsonl",
+  "solver": "outputs/dual_4090/training_data/solver_sft.jsonl",
+  "verifier": "outputs/dual_4090/training_data/verifier_sft.jsonl",
+  "summarizer": "outputs/dual_4090/training_data/summarizer_sft.jsonl"
+}

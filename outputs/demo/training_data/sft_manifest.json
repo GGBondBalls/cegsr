@@ -1,0 +1,6 @@
+{
+  "planner": "outputs/demo/training_data/planner_sft.jsonl",
+  "solver": "outputs/demo/training_data/solver_sft.jsonl",
+  "verifier": "outputs/demo/training_data/verifier_sft.jsonl",
+  "summarizer": "outputs/demo/training_data/summarizer_sft.jsonl"
+}

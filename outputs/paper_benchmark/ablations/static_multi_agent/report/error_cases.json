@@ -1,0 +1,142 @@
+[
+  {
+    "sample_id": "college_physics_test_0",
+    "dataset_name": "college_physics",
+    "pred": "100",
+    "gold": "B. 1.00032",
+    "question": "A gas cell with an optical path length of 10 cm is placed in one arm of a Michelson interferometer. If the light source for the interferometer is a laser with wavelength 632.2 nm, then 100 fringes are counted as the gas cell is evacuated. What is the index of refraction of the original gas?"
+  },
+  {
+    "sample_id": "college_physics_test_2",
+    "dataset_name": "college_physics",
+    "pred": "2",
+    "gold": "A. 5",
+    "question": "A single-electron atom has the electron in the l = 2 state. The number of allowed values of the quantum number m_l is"
+  },
+  {
+    "sample_id": "college_physics_test_4",
+    "dataset_name": "college_physics",
+    "pred": "79",
+    "gold": "A. 24.6 eV",
+    "question": "The energy required to remove both electrons from the helium atom in its ground state is 79.0 eV. How much energy is required to ionize helium (i.e., to remove one electron)?"
+  },
+  {
+    "sample_id": "college_physics_test_5",
+    "dataset_name": "college_physics",
+    "pred": "150",
+    "gold": "D. 450 m",
+    "question": "A particle decays in 2.0 ms in its rest frame. If the same particle moves at v=0.60c in the lab frame, how far will it travel in the lab before decaying?"
+  },
+  {
+    "sample_id": "college_physics_test_6",
+    "dataset_name": "college_physics",
+    "pred": "500",
+    "gold": "C. 600 nm",
+    "question": "White light is normally incident on a puddle of water (index of refraction 1.33). A thin (500 nm) layer of oil (index of refraction 1.5) floats on the surface of the puddle. Of the following, the most strongly reflected wavelength is"
+  },
+  {
+    "sample_id": "college_physics_test_7",
+    "dataset_name": "college_physics",
+    "pred": "10",
+    "gold": "C. 3 N",
+    "question": "A 10 kg box slides horizontally without friction at a speed of 1 m/s. At one point, a constant force is applied to the box in the direction of its motion. The box travels 5 m with the constant force applied. The force is then removed, leaving the box with a speed of 2 m/s. Which of the following gives the magnitude of the applied force?"
+  },
+  {
+    "sample_id": "college_physics_test_9",
+    "dataset_name": "college_physics",
+    "pred": "500",
+    "gold": "A. 10:00 PM",
+    "question": "The surface of the Sun has a temperature close to 6,000 K and it emits a blackbody (Planck) spectrum that reaches a maximum near 500 nm. For a body with a surface temperature close to 300 K, at what wavelength would the thermal spectrum reach a maximum?"
+  },
+  {
+    "sample_id": "college_physics_test_10",
+    "dataset_name": "college_physics",
+    "pred": "250",
+    "gold": "D. 10 V",
+    "question": "A magnetic field is directed perpendicular to the plane of a circular coil of area 0.2 m^2 and 250 turns. If the magnetic field is increased from 0.01 T to 0.06 T during a time interval of 0.25 s, the average induced EMF in the coil is"
+  },
+  {
+    "sample_id": "college_physics_test_12",
+    "dataset_name": "college_physics",
+    "pred": "500",
+    "gold": "B. 1,000 J",
+    "question": "A heat pump is to extract heat from an outdoor environment at 7°C and heat the environment indoors to 27°C. For each 15,000 J of heat delivered indoors, the smallest amount of work that must be supplied to the heat pump is approximately"
+  },
+  {
+    "sample_id": "college_physics_test_13",
+    "dataset_name": "college_physics",
+    "pred": "100",
+    "gold": "D. an average of 10 times, with an rms deviation of about 3",
+    "question": "The quantum efficiency of a photon detector is 0.1. If 100 photons are sent into the detector, one after the other, the detector will detect photons"
+  },
+  {
+    "sample_id": "college_physics_test_14",
+    "dataset_name": "college_physics",
+    "pred": "10",
+    "gold": "C. 45°",
+    "question": "A particle is constrained to move in a circle with a 10-meter radius. At one instant, the particle’s speed is 10 meters per second and is increasing at a rate of 10 meters per second squared. The angle between the particle’s velocity and acceleration vectors is"
+  },
+  {
+    "sample_id": "college_physics_test_16",
+    "dataset_name": "college_physics",
+    "pred": "500",
+    "gold": "B. 250",
+    "question": "A grating spectrometer can just barely resolve two wavelengths of 500 nm and 502 nm, respectively. Which of the following gives the resolving power of the spectrometer?"
+  },
+  {
+    "sample_id": "college_physics_test_17",
+    "dataset_name": "college_physics",
+    "pred": "440",
+    "gold": "B. 427 Hz",
+    "question": "At 20°C, a pipe open at both ends resonates at a frequency of 440 hertz. At what frequency does the same pipe resonate on a particularly cold day when the speed of sound is 3 percent lower than it would be at 20°C ?"
+  },
+  {
+    "sample_id": "college_physics_test_18",
+    "dataset_name": "college_physics",
+    "pred": "0",
+    "gold": "B. 0.60c",
+    "question": "A rod measures 1.00 m in its rest system. How fast must an observer move parallel to the rod to measure its length to be 0.80 m?"
+  },
+  {
+    "sample_id": "college_physics_test_19",
+    "dataset_name": "college_physics",
+    "pred": "480",
+    "gold": "B. 200 nm",
+    "question": "Blue light of wavelength 480 nanometers is most strongly reflected off a thin film of oil on a glass slide when viewed near normal incidence. Assuming that the index of refraction of the oil is 1.2 and that of the glass is 1.6, what is the minimum thickness of the oil film (other than zero) ?"
+  },
+  {
+    "sample_id": "college_physics_test_23",
+    "dataset_name": "college_physics",
+    "pred": "1",
+    "gold": "D. 10",
+    "question": "An atom has filled n = 1 and n = 2 levels. How many electrons does the atom have?"
+  },
+  {
+    "sample_id": "college_physics_test_24",
+    "dataset_name": "college_physics",
+    "pred": "10",
+    "gold": "D. 20%",
+    "question": "Two students perform an experiment in which they drop a ball from rest from a known height above the ground and measure the speed of the ball just before it strikes the ground. From repeated measurement, the students estimate the uncertainty in the measured speed of the ball to be 10 percent. Which of the following gives the uncertainty in the kinetic energy of the ball? (Assume the uncertainty in the ball’s mass is negligibly small.)"
+  },
+  {
+    "sample_id": "college_physics_test_25",
+    "dataset_name": "college_physics",
+    "pred": "0.5",
+    "gold": "C. 1/3",
+    "question": "In a nonrelativistic, one-dimensional collision, a particle of mass 2m collides with a particle of mass m at rest. If the particles stick together after the collision, what fraction of the initial kinetic energy is lost in the collision?"
+  },
+  {
+    "sample_id": "college_physics_test_27",
+    "dataset_name": "college_physics",
+    "pred": "100",
+    "gold": "C. 10 eV",
+    "question": "Under certain conditions, a beam of electrons impinging on a crystal surface will diffract and a scattering pattern of the beam can be obtained. What is the approximate kinetic energy of the electrons needed in order to see the pattern? (Assume the lattice spacing of the crystal to be 0.4 nm.)"
+  },
+  {
+    "sample_id": "college_physics_test_28",
+    "dataset_name": "college_physics",
+    "pred": "2",
+    "gold": "D. 5",
+    "question": "A single-electron atom has the electron in the l = 2 state. The number of allowed values of the quantum number m_l is"
+  }
+]

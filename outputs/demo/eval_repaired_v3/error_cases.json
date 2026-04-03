@@ -1,0 +1,142 @@
+[
+  {
+    "sample_id": "commonsenseqa_validation_0",
+    "dataset_name": "commonsense_qa",
+    "pred": "E. hall.",
+    "gold": "D. living room",
+    "question": "Where would you keep a rug near your front door?"
+  },
+  {
+    "sample_id": "commonsenseqa_validation_5",
+    "dataset_name": "commonsense_qa",
+    "pred": "C. kitchen cupboard",
+    "gold": "B. table setting",
+    "question": "Where is a salt shaker most often kept?"
+  },
+  {
+    "sample_id": "commonsenseqa_validation_11",
+    "dataset_name": "commonsense_qa",
+    "pred": "A. ocean",
+    "gold": "C. water",
+    "question": "Where is seaweed usually found alive?"
+  },
+  {
+    "sample_id": "commonsenseqa_validation_12",
+    "dataset_name": "commonsense_qa",
+    "pred": "E. roof.",
+    "gold": "C. forest",
+    "question": "David watched some nesting birds using his binoculars while on vacation.  Where might David be?."
+  },
+  {
+    "sample_id": "commonsenseqa_validation_20",
+    "dataset_name": "commonsense_qa",
+    "pred": "D. walk",
+    "gold": "A. listen to radio",
+    "question": "What would I be doing while going to work and walking?"
+  },
+  {
+    "sample_id": "commonsenseqa_validation_23",
+    "dataset_name": "commonsense_qa",
+    "pred": "B. stress",
+    "gold": "C. happiness",
+    "question": "If a person is using a computer to talk to their granddaughter, what might the computer cause for them?"
+  },
+  {
+    "sample_id": "commonsenseqa_validation_27",
+    "dataset_name": "commonsense_qa",
+    "pred": "D. gain weight",
+    "gold": "C. augment",
+    "question": "The surgeon's clients had begun to reduce, it seemed girls no longer want to what?"
+  },
+  {
+    "sample_id": "commonsenseqa_validation_29",
+    "dataset_name": "commonsense_qa",
+    "pred": "D. prehistoric times",
+    "gold": "E. ancient times",
+    "question": "When did mammoth's live?"
+  },
+  {
+    "sample_id": "commonsenseqa_validation_33",
+    "dataset_name": "commonsense_qa",
+    "pred": "A. open eyes",
+    "gold": "B. go to movies",
+    "question": "To see new films you must?"
+  },
+  {
+    "sample_id": "commonsenseqa_validation_34",
+    "dataset_name": "commonsense_qa",
+    "pred": "E. direct sunlight",
+    "gold": "A. full sunlight",
+    "question": "There was no shade for Jenny.  She was forced to lie there exposed to what?"
+  },
+  {
+    "sample_id": "commonsenseqa_validation_39",
+    "dataset_name": "commonsense_qa",
+    "pred": "E. pride",
+    "gold": "D. confident",
+    "question": "He was beginning to regret taking the fight when he saw how what his opponent was?"
+  },
+  {
+    "sample_id": "commonsenseqa_validation_43",
+    "dataset_name": "commonsense_qa",
+    "pred": "C. winch",
+    "gold": "D. construction site",
+    "question": "A crane uses many a steel cable when working a what?"
+  },
+  {
+    "sample_id": "commonsenseqa_validation_45",
+    "dataset_name": "commonsense_qa",
+    "pred": "B. better themselves",
+    "gold": "A. face problems",
+    "question": "What do people need to do to change their lives?"
+  },
+  {
+    "sample_id": "commonsenseqa_validation_60",
+    "dataset_name": "commonsense_qa",
+    "pred": "B. internet",
+    "gold": "D. library",
+    "question": "Where is known to be a wealth of information?"
+  },
+  {
+    "sample_id": "commonsenseqa_validation_62",
+    "dataset_name": "commonsense_qa",
+    "pred": "E. murdered by a landshark.",
+    "gold": "B. see beautiful views",
+    "question": "Nature can be good and bad for the person who walks, what are some things?"
+  },
+  {
+    "sample_id": "commonsenseqa_validation_65",
+    "dataset_name": "commonsense_qa",
+    "pred": "E. Connecticut",
+    "gold": "B. new england",
+    "question": "There was a toll road that meandered from Maine to New Hampshire, where was it?"
+  },
+  {
+    "sample_id": "commonsenseqa_validation_79",
+    "dataset_name": "commonsense_qa",
+    "pred": "A. England.",
+    "gold": "B. new hampshire",
+    "question": "John was an aristocratic fox hunter.  Where might he live?"
+  },
+  {
+    "sample_id": "commonsenseqa_validation_82",
+    "dataset_name": "commonsense_qa",
+    "pred": "B. count to ten",
+    "gold": "D. state name",
+    "question": "What do you ask a child to do when you first meet her?"
+  },
+  {
+    "sample_id": "commonsenseqa_validation_88",
+    "dataset_name": "commonsense_qa",
+    "pred": "D. shower stall",
+    "gold": "A. bathtub",
+    "question": "Where would you find a single shower curtain being used?"
+  },
+  {
+    "sample_id": "commonsenseqa_validation_91",
+    "dataset_name": "commonsense_qa",
+    "pred": "E. eat cake",
+    "gold": "A. farm house",
+    "question": "Where does a heifer's master live?"
+  }
+]

@@ -1,0 +1,142 @@
+[
+  {
+    "sample_id": "commonsenseqa_validation_0",
+    "dataset_name": "commonsense_qa",
+    "pred": "E. hall",
+    "gold": "D. living room",
+    "question": "Where would you keep a rug near your front door?"
+  },
+  {
+    "sample_id": "commonsenseqa_validation_4",
+    "dataset_name": "commonsense_qa",
+    "pred": "D. street corner",
+    "gold": "B. front door",
+    "question": "The town house went right to the curb, a slot effectively made a mailbox of the what?"
+  },
+  {
+    "sample_id": "commonsenseqa_validation_5",
+    "dataset_name": "commonsense_qa",
+    "pred": "C. kitchen cupboard",
+    "gold": "B. table setting",
+    "question": "Where is a salt shaker most often kept?"
+  },
+  {
+    "sample_id": "commonsenseqa_validation_7",
+    "dataset_name": "commonsense_qa",
+    "pred": "D. front door",
+    "gold": "C. own home",
+    "question": "What would someone use a personal key for?"
+  },
+  {
+    "sample_id": "commonsenseqa_validation_9",
+    "dataset_name": "commonsense_qa",
+    "pred": "B. silence",
+    "gold": "D. stillness",
+    "question": "During the winter hunt he could hear every motion in the woods, this was because of the what of everything?"
+  },
+  {
+    "sample_id": "commonsenseqa_validation_11",
+    "dataset_name": "commonsense_qa",
+    "pred": "B. found in ocean",
+    "gold": "C. water",
+    "question": "Where is seaweed usually found alive?"
+  },
+  {
+    "sample_id": "commonsenseqa_validation_12",
+    "dataset_name": "commonsense_qa",
+    "pred": "D. countryside",
+    "gold": "C. forest",
+    "question": "David watched some nesting birds using his binoculars while on vacation.  Where might David be?."
+  },
+  {
+    "sample_id": "commonsenseqa_validation_13",
+    "dataset_name": "commonsense_qa",
+    "pred": "C. throwing",
+    "gold": "A. grab",
+    "question": "What would you do to a rock when climb up a cliff?"
+  },
+  {
+    "sample_id": "commonsenseqa_validation_19",
+    "dataset_name": "commonsense_qa",
+    "pred": "B. unable",
+    "gold": "C. unlikely",
+    "question": "Steve thought that it was possible, but he agreed that it was what?"
+  },
+  {
+    "sample_id": "commonsenseqa_validation_20",
+    "dataset_name": "commonsense_qa",
+    "pred": "D. walk",
+    "gold": "A. listen to radio",
+    "question": "What would I be doing while going to work and walking?"
+  },
+  {
+    "sample_id": "commonsenseqa_validation_23",
+    "dataset_name": "commonsense_qa",
+    "pred": "B. stress",
+    "gold": "C. happiness",
+    "question": "If a person is using a computer to talk to their granddaughter, what might the computer cause for them?"
+  },
+  {
+    "sample_id": "commonsenseqa_validation_27",
+    "dataset_name": "commonsense_qa",
+    "pred": "B. make larger",
+    "gold": "C. augment",
+    "question": "The surgeon's clients had begun to reduce, it seemed girls no longer want to what?"
+  },
+  {
+    "sample_id": "commonsenseqa_validation_29",
+    "dataset_name": "commonsense_qa",
+    "pred": "C. prehistory",
+    "gold": "E. ancient times",
+    "question": "When did mammoth's live?"
+  },
+  {
+    "sample_id": "commonsenseqa_validation_33",
+    "dataset_name": "commonsense_qa",
+    "pred": "A. open eyes",
+    "gold": "B. go to movies",
+    "question": "To see new films you must?"
+  },
+  {
+    "sample_id": "commonsenseqa_validation_34",
+    "dataset_name": "commonsense_qa",
+    "pred": "E. direct sunlight",
+    "gold": "A. full sunlight",
+    "question": "There was no shade for Jenny.  She was forced to lie there exposed to what?"
+  },
+  {
+    "sample_id": "commonsenseqa_validation_39",
+    "dataset_name": "commonsense_qa",
+    "pred": "E. pride",
+    "gold": "D. confident",
+    "question": "He was beginning to regret taking the fight when he saw how what his opponent was?"
+  },
+  {
+    "sample_id": "commonsenseqa_validation_45",
+    "dataset_name": "commonsense_qa",
+    "pred": "B. better themselves",
+    "gold": "A. face problems",
+    "question": "What do people need to do to change their lives?"
+  },
+  {
+    "sample_id": "commonsenseqa_validation_46",
+    "dataset_name": "commonsense_qa",
+    "pred": "C. laboratory",
+    "gold": "E. industrial area",
+    "question": "A loud machine is irritating, but many are expected where?"
+  },
+  {
+    "sample_id": "commonsenseqa_validation_50",
+    "dataset_name": "commonsense_qa",
+    "pred": "C. being annoyed",
+    "gold": "A. frustration",
+    "question": "Sally was standing in queue.  The line was very, very slow.  What was she feeling?"
+  },
+  {
+    "sample_id": "commonsenseqa_validation_60",
+    "dataset_name": "commonsense_qa",
+    "pred": "B. internet",
+    "gold": "D. library",
+    "question": "Where is known to be a wealth of information?"
+  }
+]

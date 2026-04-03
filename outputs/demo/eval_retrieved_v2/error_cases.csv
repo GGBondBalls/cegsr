@@ -1,0 +1,21 @@
+sample_id,dataset_name,pred,gold,question
+commonsenseqa_validation_0,commonsense_qa,E. hall,D. living room,Where would you keep a rug near your front door?
+commonsenseqa_validation_11,commonsense_qa,A. ocean,C. water,Where is seaweed usually found alive?
+commonsenseqa_validation_16,commonsense_qa,E. property,B. neighborhood,"They children loved having a back yard, and the parents loved that it was a safe what?"
+commonsenseqa_validation_18,commonsense_qa,B. theater,E. school,"The architect thought that a mezzanine would look good, but the planning committee rejected it.  They told the architect that they felt it was a potential hazard given the ages of the people who would be using it.  What might they be designing?"
+commonsenseqa_validation_20,commonsense_qa,D. walk,A. listen to radio,What would I be doing while going to work and walking?
+commonsenseqa_validation_24,commonsense_qa,A. surprise,C. annoyance,What would it be if they get a surprising show over and over?
+commonsenseqa_validation_27,commonsense_qa,D. gain weight.,C. augment,"The surgeon's clients had begun to reduce, it seemed girls no longer want to what?"
+commonsenseqa_validation_29,commonsense_qa,C. prehistory,E. ancient times,When did mammoth's live?
+commonsenseqa_validation_31,commonsense_qa,A. music school,C. neighbor's house,Where can you go to use a piano in your neighborhood if you don't have one?
+commonsenseqa_validation_34,commonsense_qa,E. direct sunlight,A. full sunlight,There was no shade for Jenny.  She was forced to lie there exposed to what?
+commonsenseqa_validation_37,commonsense_qa,C. buying vegetables,A. buy food,What do you do when you're going to market?
+commonsenseqa_validation_39,commonsense_qa,C. satisfaction,D. confident,He was beginning to regret taking the fight when he saw how what his opponent was?
+commonsenseqa_validation_45,commonsense_qa,B. better themselves,A. face problems,What do people need to do to change their lives?
+commonsenseqa_validation_60,commonsense_qa,B. internet,D. library,Where is known to be a wealth of information?
+commonsenseqa_validation_61,commonsense_qa,D. education,A. theater,In the building where James worked there was a small mezzanine in the auditorium to make more space for seats.  Where might James work?
+commonsenseqa_validation_62,commonsense_qa,C. getting wet,B. see beautiful views,"Nature can be good and bad for the person who walks, what are some things?"
+commonsenseqa_validation_68,commonsense_qa,A. serious,C. musical,"Sarah didn't like to play but she didn't want to be sedentary and bored, either, so she took up what?"
+commonsenseqa_validation_72,commonsense_qa,E. heirlooms,A. family tree,James's nice asked him about her grandfather. She was interested in learning about what?
+commonsenseqa_validation_77,commonsense_qa,D. teach,B. advance knowledge,"Computers have allowed everybody to answer questions they have quickly, but still we seem to be getting duller despite access to this what?"
+commonsenseqa_validation_81,commonsense_qa,E. arousal,C. shortness of breath,What happens if someone kisses too long?

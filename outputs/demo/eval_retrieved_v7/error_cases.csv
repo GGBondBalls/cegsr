@@ -1,0 +1,21 @@
+sample_id,dataset_name,pred,gold,question
+commonsenseqa_validation_0,commonsense_qa,E. hall,D. living room,Where would you keep a rug near your front door?
+commonsenseqa_validation_1,commonsense_qa,E. cabinet,D. cabinet,Danny found an old film in a sealed what?
+commonsenseqa_validation_4,commonsense_qa,E. porch.,B. front door,"The town house went right to the curb, a slot effectively made a mailbox of the what?"
+commonsenseqa_validation_5,commonsense_qa,C. kitchen cupboard,B. table setting,Where is a salt shaker most often kept?
+commonsenseqa_validation_6,commonsense_qa,E. actors,A. theater,"Everybody was changing into costumes in the dressing room, it was almost time to take the what stage?"
+commonsenseqa_validation_11,commonsense_qa,A. ocean,C. water,Where is seaweed usually found alive?
+commonsenseqa_validation_15,commonsense_qa,D. enjoyable,B. watching television,How could you have fun by yourself with no one around you?
+commonsenseqa_validation_20,commonsense_qa,D. walk,A. listen to radio,What would I be doing while going to work and walking?
+commonsenseqa_validation_23,commonsense_qa,B. stress,C. happiness,"If a person is using a computer to talk to their granddaughter, what might the computer cause for them?"
+commonsenseqa_validation_27,commonsense_qa,E. expand,C. augment,"The surgeon's clients had begun to reduce, it seemed girls no longer want to what?"
+commonsenseqa_validation_28,commonsense_qa,E. hurt feelings,C. resentment,What does a person often feel about someone judging them guilty?
+commonsenseqa_validation_29,commonsense_qa,D. prehistoric times,E. ancient times,When did mammoth's live?
+commonsenseqa_validation_33,commonsense_qa,A. open eyes,B. go to movies,To see new films you must?
+commonsenseqa_validation_34,commonsense_qa,E. direct sunlight,A. full sunlight,There was no shade for Jenny.  She was forced to lie there exposed to what?
+commonsenseqa_validation_39,commonsense_qa,E. pride,D. confident,He was beginning to regret taking the fight when he saw how what his opponent was?
+commonsenseqa_validation_42,commonsense_qa,D. teardrops.,B. snowflake,The water in clouds turn in to what when it gets cold?
+commonsenseqa_validation_43,commonsense_qa,C. winch,D. construction site,A crane uses many a steel cable when working a what?
+commonsenseqa_validation_45,commonsense_qa,B. better themselves,A. face problems,What do people need to do to change their lives?
+commonsenseqa_validation_58,commonsense_qa,C. garden,E. captivity,"If a lizard is fed by people every day, what has happened to it?"
+commonsenseqa_validation_60,commonsense_qa,B. internet,D. library,Where is known to be a wealth of information?

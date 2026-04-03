@@ -1,0 +1,142 @@
+[
+  {
+    "sample_id": "commonsenseqa_validation_0",
+    "dataset_name": "commonsense_qa",
+    "pred": "E. hall",
+    "gold": "D. living room",
+    "question": "Where would you keep a rug near your front door?"
+  },
+  {
+    "sample_id": "commonsenseqa_validation_1",
+    "dataset_name": "commonsense_qa",
+    "pred": "E. cabinet",
+    "gold": "D. cabinet",
+    "question": "Danny found an old film in a sealed what?"
+  },
+  {
+    "sample_id": "commonsenseqa_validation_4",
+    "dataset_name": "commonsense_qa",
+    "pred": "E. porch.",
+    "gold": "B. front door",
+    "question": "The town house went right to the curb, a slot effectively made a mailbox of the what?"
+  },
+  {
+    "sample_id": "commonsenseqa_validation_5",
+    "dataset_name": "commonsense_qa",
+    "pred": "C. kitchen cupboard",
+    "gold": "B. table setting",
+    "question": "Where is a salt shaker most often kept?"
+  },
+  {
+    "sample_id": "commonsenseqa_validation_6",
+    "dataset_name": "commonsense_qa",
+    "pred": "E. actors and actresses.",
+    "gold": "A. theater",
+    "question": "Everybody was changing into costumes in the dressing room, it was almost time to take the what stage?"
+  },
+  {
+    "sample_id": "commonsenseqa_validation_11",
+    "dataset_name": "commonsense_qa",
+    "pred": "A. ocean",
+    "gold": "C. water",
+    "question": "Where is seaweed usually found alive?"
+  },
+  {
+    "sample_id": "commonsenseqa_validation_15",
+    "dataset_name": "commonsense_qa",
+    "pred": "D. enjoyable",
+    "gold": "B. watching television",
+    "question": "How could you have fun by yourself with no one around you?"
+  },
+  {
+    "sample_id": "commonsenseqa_validation_20",
+    "dataset_name": "commonsense_qa",
+    "pred": "D. walk",
+    "gold": "A. listen to radio",
+    "question": "What would I be doing while going to work and walking?"
+  },
+  {
+    "sample_id": "commonsenseqa_validation_23",
+    "dataset_name": "commonsense_qa",
+    "pred": "B. stress",
+    "gold": "C. happiness",
+    "question": "If a person is using a computer to talk to their granddaughter, what might the computer cause for them?"
+  },
+  {
+    "sample_id": "commonsenseqa_validation_27",
+    "dataset_name": "commonsense_qa",
+    "pred": "E. expand",
+    "gold": "C. augment",
+    "question": "The surgeon's clients had begun to reduce, it seemed girls no longer want to what?"
+  },
+  {
+    "sample_id": "commonsenseqa_validation_28",
+    "dataset_name": "commonsense_qa",
+    "pred": "E. hurt feelings",
+    "gold": "C. resentment",
+    "question": "What does a person often feel about someone judging them guilty?"
+  },
+  {
+    "sample_id": "commonsenseqa_validation_29",
+    "dataset_name": "commonsense_qa",
+    "pred": "D. prehistoric times",
+    "gold": "E. ancient times",
+    "question": "When did mammoth's live?"
+  },
+  {
+    "sample_id": "commonsenseqa_validation_34",
+    "dataset_name": "commonsense_qa",
+    "pred": "E. direct sunlight",
+    "gold": "A. full sunlight",
+    "question": "There was no shade for Jenny.  She was forced to lie there exposed to what?"
+  },
+  {
+    "sample_id": "commonsenseqa_validation_39",
+    "dataset_name": "commonsense_qa",
+    "pred": "E. pride",
+    "gold": "D. confident",
+    "question": "He was beginning to regret taking the fight when he saw how what his opponent was?"
+  },
+  {
+    "sample_id": "commonsenseqa_validation_42",
+    "dataset_name": "commonsense_qa",
+    "pred": "D. teardrops.",
+    "gold": "B. snowflake",
+    "question": "The water in clouds turn in to what when it gets cold?"
+  },
+  {
+    "sample_id": "commonsenseqa_validation_43",
+    "dataset_name": "commonsense_qa",
+    "pred": "C. winch",
+    "gold": "D. construction site",
+    "question": "A crane uses many a steel cable when working a what?"
+  },
+  {
+    "sample_id": "commonsenseqa_validation_45",
+    "dataset_name": "commonsense_qa",
+    "pred": "B. better themselves",
+    "gold": "A. face problems",
+    "question": "What do people need to do to change their lives?"
+  },
+  {
+    "sample_id": "commonsenseqa_validation_60",
+    "dataset_name": "commonsense_qa",
+    "pred": "B. internet",
+    "gold": "D. library",
+    "question": "Where is known to be a wealth of information?"
+  },
+  {
+    "sample_id": "commonsenseqa_validation_62",
+    "dataset_name": "commonsense_qa",
+    "pred": "E. murdered by a landshark",
+    "gold": "B. see beautiful views",
+    "question": "Nature can be good and bad for the person who walks, what are some things?"
+  },
+  {
+    "sample_id": "commonsenseqa_validation_79",
+    "dataset_name": "commonsense_qa",
+    "pred": "A. England",
+    "gold": "B. new hampshire",
+    "question": "John was an aristocratic fox hunter.  Where might he live?"
+  }
+]

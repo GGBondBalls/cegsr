@@ -1,0 +1,11 @@
+#!/usr/bin/env bash
+set -euo pipefail
+
+llamafactory-cli train outputs/ablations_v2/offline_sft_only/export/llamafactory_planner_lora.yaml
+llamafactory-cli train outputs/ablations_v2/offline_sft_only/export/llamafactory_planner_qlora.yaml
+llamafactory-cli train outputs/ablations_v2/offline_sft_only/export/llamafactory_solver_lora.yaml
+llamafactory-cli train outputs/ablations_v2/offline_sft_only/export/llamafactory_solver_qlora.yaml
+llamafactory-cli train outputs/ablations_v2/offline_sft_only/export/llamafactory_verifier_lora.yaml
+llamafactory-cli train outputs/ablations_v2/offline_sft_only/export/llamafactory_verifier_qlora.yaml
+llamafactory-cli train outputs/ablations_v2/offline_sft_only/export/llamafactory_summarizer_lora.yaml
+llamafactory-cli train outputs/ablations_v2/offline_sft_only/export/llamafactory_summarizer_qlora.yaml

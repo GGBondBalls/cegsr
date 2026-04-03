@@ -1,0 +1,142 @@
+[
+  {
+    "sample_id": "commonsenseqa_validation_0",
+    "dataset_name": "commonsense_qa",
+    "pred": "E. hall",
+    "gold": "D. living room",
+    "question": "Where would you keep a rug near your front door?"
+  },
+  {
+    "sample_id": "commonsenseqa_validation_4",
+    "dataset_name": "commonsense_qa",
+    "pred": "E. porch.",
+    "gold": "B. front door",
+    "question": "The town house went right to the curb, a slot effectively made a mailbox of the what?"
+  },
+  {
+    "sample_id": "commonsenseqa_validation_5",
+    "dataset_name": "commonsense_qa",
+    "pred": "C. kitchen cupboard",
+    "gold": "B. table setting",
+    "question": "Where is a salt shaker most often kept?"
+  },
+  {
+    "sample_id": "commonsenseqa_validation_11",
+    "dataset_name": "commonsense_qa",
+    "pred": "A. ocean",
+    "gold": "C. water",
+    "question": "Where is seaweed usually found alive?"
+  },
+  {
+    "sample_id": "commonsenseqa_validation_20",
+    "dataset_name": "commonsense_qa",
+    "pred": "D. walk",
+    "gold": "A. listen to radio",
+    "question": "What would I be doing while going to work and walking?"
+  },
+  {
+    "sample_id": "commonsenseqa_validation_27",
+    "dataset_name": "commonsense_qa",
+    "pred": "E. expand",
+    "gold": "C. augment",
+    "question": "The surgeon's clients had begun to reduce, it seemed girls no longer want to what?"
+  },
+  {
+    "sample_id": "commonsenseqa_validation_29",
+    "dataset_name": "commonsense_qa",
+    "pred": "D. prehistoric times",
+    "gold": "E. ancient times",
+    "question": "When did mammoth's live?"
+  },
+  {
+    "sample_id": "commonsenseqa_validation_34",
+    "dataset_name": "commonsense_qa",
+    "pred": "E. direct sunlight",
+    "gold": "A. full sunlight",
+    "question": "There was no shade for Jenny.  She was forced to lie there exposed to what?"
+  },
+  {
+    "sample_id": "commonsenseqa_validation_39",
+    "dataset_name": "commonsense_qa",
+    "pred": "E. pride",
+    "gold": "D. confident",
+    "question": "He was beginning to regret taking the fight when he saw how what his opponent was?"
+  },
+  {
+    "sample_id": "commonsenseqa_validation_42",
+    "dataset_name": "commonsense_qa",
+    "pred": "D. teardrops.",
+    "gold": "B. snowflake",
+    "question": "The water in clouds turn in to what when it gets cold?"
+  },
+  {
+    "sample_id": "commonsenseqa_validation_45",
+    "dataset_name": "commonsense_qa",
+    "pred": "B. better themselves",
+    "gold": "A. face problems",
+    "question": "What do people need to do to change their lives?"
+  },
+  {
+    "sample_id": "commonsenseqa_validation_62",
+    "dataset_name": "commonsense_qa",
+    "pred": "E. murdered by a landshark",
+    "gold": "B. see beautiful views",
+    "question": "Nature can be good and bad for the person who walks, what are some things?"
+  },
+  {
+    "sample_id": "commonsenseqa_validation_77",
+    "dataset_name": "commonsense_qa",
+    "pred": "E. follow instructions",
+    "gold": "B. advance knowledge",
+    "question": "Computers have allowed everybody to answer questions they have quickly, but still we seem to be getting duller despite access to this what?"
+  },
+  {
+    "sample_id": "commonsenseqa_validation_79",
+    "dataset_name": "commonsense_qa",
+    "pred": "A. England",
+    "gold": "B. new hampshire",
+    "question": "John was an aristocratic fox hunter.  Where might he live?"
+  },
+  {
+    "sample_id": "commonsenseqa_validation_81",
+    "dataset_name": "commonsense_qa",
+    "pred": "E. arousal",
+    "gold": "C. shortness of breath",
+    "question": "What happens if someone kisses too long?"
+  },
+  {
+    "sample_id": "commonsenseqa_validation_86",
+    "dataset_name": "commonsense_qa",
+    "pred": "A. gap",
+    "gold": "B. shopping mall",
+    "question": "Where can you buy jeans at one of may indoor merchants?"
+  },
+  {
+    "sample_id": "commonsenseqa_validation_88",
+    "dataset_name": "commonsense_qa",
+    "pred": "D. shower stall",
+    "gold": "A. bathtub",
+    "question": "Where would you find a single shower curtain being used?"
+  },
+  {
+    "sample_id": "commonsenseqa_validation_92",
+    "dataset_name": "commonsense_qa",
+    "pred": "B. lamb",
+    "gold": "C. done",
+    "question": "When cooking sheep meat a lot of people might want to be well?"
+  },
+  {
+    "sample_id": "commonsenseqa_validation_93",
+    "dataset_name": "commonsense_qa",
+    "pred": "E. opera",
+    "gold": "A. confession",
+    "question": "What could people do that involves talking?"
+  },
+  {
+    "sample_id": "arc_validation_6",
+    "dataset_name": "ai2_arc",
+    "pred": "D. an organ.",
+    "gold": "A. a cell",
+    "question": "Tracey was learning about structural organization in animals. What level of structural organization best describes an egg?"
+  }
+]

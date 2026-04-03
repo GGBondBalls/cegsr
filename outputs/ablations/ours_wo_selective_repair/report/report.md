@@ -1,0 +1,18 @@
+# Run Summary
+
+- **num_episodes**: 5
+- **accuracy**: 1.0
+- **exact_match**: 1.0
+- **mcq_accuracy**: 0.0
+- **repair_coverage**: 0.0
+- **repair_success_rate**: 0.0
+- **average_trajectory_length**: 4.0
+- **average_input_tokens**: 349.0
+- **average_output_tokens**: 33.8
+- **retrieval_hit_usefulness_proxy**: 1.0
+- **graph_num_nodes**: 20
+- **graph_num_edges**: 60
+- **training_data_size_by_role::planner**: 5
+- **training_data_size_by_role::solver**: 5
+- **training_data_size_by_role::verifier**: 5
+- **training_data_size_by_role::summarizer**: 5

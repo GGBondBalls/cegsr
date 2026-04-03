@@ -1,0 +1,58 @@
+{
+  "output_path": "outputs/data/paper_reasoning_eval.jsonl",
+  "num_rows": 700,
+  "split": "validation",
+  "max_per_source": 100,
+  "seed": 42,
+  "sources": [
+    {
+      "dataset_name": "college_physics",
+      "source_split": "test",
+      "num_rows": 100,
+      "source_ref": "cais/mmlu",
+      "status": "ok"
+    },
+    {
+      "dataset_name": "college_chemistry",
+      "source_split": "test",
+      "num_rows": 100,
+      "source_ref": "cais/mmlu",
+      "status": "ok"
+    },
+    {
+      "dataset_name": "pubmed_qa",
+      "source_split": "train",
+      "num_rows": 100,
+      "source_ref": "qiaojin/PubMedQA",
+      "status": "ok"
+    },
+    {
+      "dataset_name": "gsm8k",
+      "source_split": "test",
+      "num_rows": 100,
+      "source_ref": "openai/gsm8k",
+      "status": "ok"
+    },
+    {
+      "dataset_name": "commonsense_qa",
+      "source_split": "validation",
+      "num_rows": 100,
+      "source_ref": "tau/commonsense_qa",
+      "status": "ok"
+    },
+    {
+      "dataset_name": "ai2_arc",
+      "source_split": "validation",
+      "num_rows": 100,
+      "source_ref": "allenai/ai2_arc",
+      "status": "ok"
+    },
+    {
+      "dataset_name": "boolq",
+      "source_split": "validation",
+      "num_rows": 100,
+      "source_ref": "google/boolq",
+      "status": "ok"
+    }
+  ]
+}

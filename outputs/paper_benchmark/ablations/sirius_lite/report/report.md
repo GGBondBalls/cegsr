@@ -1,0 +1,72 @@
+# Run Summary
+
+## Aggregate Metrics
+- **num_episodes**: 700
+- **accuracy**: 0.6586
+- **exact_match**: 0.6571
+- **mcq_accuracy**: 0.6557
+- **repair_coverage**: 0.0
+- **repair_success_rate**: 0.0
+- **num_changed_repairs**: 0
+- **average_trajectory_length**: 4.0
+- **average_input_tokens**: 883.0057
+- **average_output_tokens**: 73.0886
+- **retrieval_hit_usefulness_proxy**: 0.0
+- **graph_num_nodes**: 0
+- **graph_num_edges**: 0
+- **training_data_size_by_role::planner**: 700
+- **training_data_size_by_role::solver**: 700
+- **training_data_size_by_role::verifier**: 700
+- **training_data_size_by_role::summarizer**: 700
+- **dataset_accuracy::college_physics**: 0.38
+- **dataset_count::college_physics**: 100
+- **dataset_accuracy::college_chemistry**: 0.47
+- **dataset_count::college_chemistry**: 100
+- **dataset_accuracy::pubmed_qa**: 0.96
+- **dataset_count::pubmed_qa**: 100
+- **dataset_accuracy::gsm8k**: 0.02
+- **dataset_count::gsm8k**: 100
+- **dataset_accuracy::commonsense_qa**: 1.0
+- **dataset_count::commonsense_qa**: 100
+- **dataset_accuracy::ai2_arc**: 0.92
+- **dataset_count::ai2_arc**: 100
+- **dataset_accuracy::boolq**: 0.86
+- **dataset_count::boolq**: 100
+- **category_accuracy::college_physics**: 0.38
+- **category_accuracy::college_chemistry**: 0.47
+- **category_accuracy::biomedical_qa**: 0.96
+- **category_accuracy::math_word_problem**: 0.02
+- **category_accuracy::commonsense**: 1.0
+- **category_accuracy::science_mcq**: 0.92
+- **category_accuracy::reading_comprehension_yesno**: 0.86
+
+## Dataset Breakdown
+- college_physics: 0.38
+- college_chemistry: 0.47
+- pubmed_qa: 0.96
+- gsm8k: 0.02
+- commonsense_qa: 1.0
+- ai2_arc: 0.92
+- boolq: 0.86
+
+## Error Cases
+- sample_id=college_physics_test_0 | dataset=college_physics | pred=100 | gold=B. 1.00032
+- sample_id=college_physics_test_2 | dataset=college_physics | pred=2 | gold=A. 5
+- sample_id=college_physics_test_4 | dataset=college_physics | pred=79 | gold=A. 24.6 eV
+- sample_id=college_physics_test_5 | dataset=college_physics | pred=150 | gold=D. 450 m
+- sample_id=college_physics_test_6 | dataset=college_physics | pred=500 | gold=C. 600 nm
+- sample_id=college_physics_test_7 | dataset=college_physics | pred=10 | gold=C. 3 N
+- sample_id=college_physics_test_9 | dataset=college_physics | pred=500 | gold=A. 10:00 PM
+- sample_id=college_physics_test_10 | dataset=college_physics | pred=250 | gold=D. 10 V
+- sample_id=college_physics_test_12 | dataset=college_physics | pred=500 | gold=B. 1,000 J
+- sample_id=college_physics_test_13 | dataset=college_physics | pred=100 | gold=D. an average of 10 times, with an rms deviation of about 3
+- sample_id=college_physics_test_14 | dataset=college_physics | pred=10 | gold=C. 45°
+- sample_id=college_physics_test_16 | dataset=college_physics | pred=500 | gold=B. 250
+- sample_id=college_physics_test_17 | dataset=college_physics | pred=440 | gold=B. 427 Hz
+- sample_id=college_physics_test_18 | dataset=college_physics | pred=0 | gold=B. 0.60c
+- sample_id=college_physics_test_19 | dataset=college_physics | pred=480 | gold=B. 200 nm
+- sample_id=college_physics_test_23 | dataset=college_physics | pred=1 | gold=D. 10
+- sample_id=college_physics_test_24 | dataset=college_physics | pred=10 | gold=D. 20%
+- sample_id=college_physics_test_25 | dataset=college_physics | pred=0.5 | gold=C. 1/3
+- sample_id=college_physics_test_27 | dataset=college_physics | pred=100 | gold=C. 10 eV
+- sample_id=college_physics_test_28 | dataset=college_physics | pred=2 | gold=D. 5

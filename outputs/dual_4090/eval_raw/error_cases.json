@@ -1,0 +1,142 @@
+[
+  {
+    "sample_id": "commonsenseqa_validation_0",
+    "dataset_name": "commonsense_qa",
+    "pred": "E. hall",
+    "gold": "D. living room",
+    "question": "Where would you keep a rug near your front door?"
+  },
+  {
+    "sample_id": "commonsenseqa_validation_4",
+    "dataset_name": "commonsense_qa",
+    "pred": "E. porch.",
+    "gold": "B. front door",
+    "question": "The town house went right to the curb, a slot effectively made a mailbox of the what?"
+  },
+  {
+    "sample_id": "commonsenseqa_validation_11",
+    "dataset_name": "commonsense_qa",
+    "pred": "A. ocean.",
+    "gold": "C. water",
+    "question": "Where is seaweed usually found alive?"
+  },
+  {
+    "sample_id": "commonsenseqa_validation_16",
+    "dataset_name": "commonsense_qa",
+    "pred": "E. property.",
+    "gold": "B. neighborhood",
+    "question": "They children loved having a back yard, and the parents loved that it was a safe what?"
+  },
+  {
+    "sample_id": "commonsenseqa_validation_18",
+    "dataset_name": "commonsense_qa",
+    "pred": "B. theater.",
+    "gold": "E. school",
+    "question": "The architect thought that a mezzanine would look good, but the planning committee rejected it.  They told the architect that they felt it was a potential hazard given the ages of the people who would be using it.  What might they be designing?"
+  },
+  {
+    "sample_id": "commonsenseqa_validation_20",
+    "dataset_name": "commonsense_qa",
+    "pred": "D. walk.",
+    "gold": "A. listen to radio",
+    "question": "What would I be doing while going to work and walking?"
+  },
+  {
+    "sample_id": "commonsenseqa_validation_29",
+    "dataset_name": "commonsense_qa",
+    "pred": "D. prehistoric times",
+    "gold": "E. ancient times",
+    "question": "When did mammoth's live?"
+  },
+  {
+    "sample_id": "commonsenseqa_validation_31",
+    "dataset_name": "commonsense_qa",
+    "pred": "A. music school",
+    "gold": "C. neighbor's house",
+    "question": "Where can you go to use a piano in your neighborhood if you don't have one?"
+  },
+  {
+    "sample_id": "commonsenseqa_validation_34",
+    "dataset_name": "commonsense_qa",
+    "pred": "E. direct sunlight.",
+    "gold": "A. full sunlight",
+    "question": "There was no shade for Jenny.  She was forced to lie there exposed to what?"
+  },
+  {
+    "sample_id": "commonsenseqa_validation_45",
+    "dataset_name": "commonsense_qa",
+    "pred": "B. better themselves",
+    "gold": "A. face problems",
+    "question": "What do people need to do to change their lives?"
+  },
+  {
+    "sample_id": "commonsenseqa_validation_56",
+    "dataset_name": "commonsense_qa",
+    "pred": "B. start running",
+    "gold": "E. last several years",
+    "question": "If you take the risk buying a used car, you still hope it can what?"
+  },
+  {
+    "sample_id": "commonsenseqa_validation_60",
+    "dataset_name": "commonsense_qa",
+    "pred": "B. internet.",
+    "gold": "D. library",
+    "question": "Where is known to be a wealth of information?"
+  },
+  {
+    "sample_id": "commonsenseqa_validation_62",
+    "dataset_name": "commonsense_qa",
+    "pred": "A. seeing bear",
+    "gold": "B. see beautiful views",
+    "question": "Nature can be good and bad for the person who walks, what are some things?"
+  },
+  {
+    "sample_id": "commonsenseqa_validation_73",
+    "dataset_name": "commonsense_qa",
+    "pred": "C. garments",
+    "gold": "D. expensive clothing",
+    "question": "If you wanted to show off silk, what item could it be on?"
+  },
+  {
+    "sample_id": "commonsenseqa_validation_79",
+    "dataset_name": "commonsense_qa",
+    "pred": "A. england",
+    "gold": "B. new hampshire",
+    "question": "John was an aristocratic fox hunter.  Where might he live?"
+  },
+  {
+    "sample_id": "commonsenseqa_validation_84",
+    "dataset_name": "commonsense_qa",
+    "pred": "C. his hand.",
+    "gold": "E. child's hand",
+    "question": "James saw a kite flying in the sky.  He traced the string back to its origin and found it.  Where did the string begin?"
+  },
+  {
+    "sample_id": "commonsenseqa_validation_88",
+    "dataset_name": "commonsense_qa",
+    "pred": "D. shower stall.",
+    "gold": "A. bathtub",
+    "question": "Where would you find a single shower curtain being used?"
+  },
+  {
+    "sample_id": "commonsenseqa_validation_89",
+    "dataset_name": "commonsense_qa",
+    "pred": "E. tree",
+    "gold": "D. amazon river",
+    "question": "You should watch out for snakes if floating down what African body of water?"
+  },
+  {
+    "sample_id": "arc_validation_13",
+    "dataset_name": "ai2_arc",
+    "pred": "C. fewer snakes and fewer birds.",
+    "gold": "A. more snakes and fewer birds",
+    "question": "An island has many kinds of birds, no native species of snakes, and few large predators. Brown snakes eat bird eggs. What is the most likely result of brown snakes being released accidentally on the island?"
+  },
+  {
+    "sample_id": "arc_validation_32",
+    "dataset_name": "ai2_arc",
+    "pred": "D. Air particles move down and to the right.",
+    "gold": "B. Air particles move up and to the right.",
+    "question": "A mass of air is at an elevation of 1000 meters in the low pressure center of a Northern Hemisphere storm. Which of the following best describes the motion of air particles in this air mass due to storm conditions and the rotation of Earth as the air mass moves outward?"
+  }
+]

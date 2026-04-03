@@ -1,0 +1,6 @@
+{
+  "planner": "outputs/paper_benchmark/training_data/planner_sft.jsonl",
+  "solver": "outputs/paper_benchmark/training_data/solver_sft.jsonl",
+  "verifier": "outputs/paper_benchmark/training_data/verifier_sft.jsonl",
+  "summarizer": "outputs/paper_benchmark/training_data/summarizer_sft.jsonl"
+}

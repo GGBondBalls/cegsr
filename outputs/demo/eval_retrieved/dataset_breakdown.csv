@@ -1,0 +1,5 @@
+name,accuracy
+commonsense_qa,0.64
+ai2_arc,0.66
+boolq,0.54
+pubmed_qa,0.52

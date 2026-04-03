@@ -1,0 +1,6 @@
+{
+  "planner": "outputs\\pipeline_smoke\\training_data\\planner_sft.jsonl",
+  "solver": "outputs\\pipeline_smoke\\training_data\\solver_sft.jsonl",
+  "verifier": "outputs\\pipeline_smoke\\training_data\\verifier_sft.jsonl",
+  "summarizer": "outputs\\pipeline_smoke\\training_data\\summarizer_sft.jsonl"
+}
