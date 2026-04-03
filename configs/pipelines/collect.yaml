@@ -1,0 +1,3 @@
+pipeline:
+  step: collect
+  use_retrieval: false

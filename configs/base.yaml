@@ -1,0 +1,116 @@
+project:
+  name: cegsr
+  output_dir: outputs/demo
+
+task:
+  task_type: qa
+  dataset_path: outputs/data/reasoning_mix_eval.jsonl
+  prepare_config: configs/datasets/reasoning_mix_eval.yaml
+
+backend:
+  kind: hf_local
+  model_name_or_path: /home/fyk/models/Qwen/Qwen2.5-X.XB-Instruct
+  model_size: 1.5B
+  device: auto
+  trust_remote_code: true
+  use_chat_template: true
+  load_kwargs:
+    torch_dtype: auto
+
+graph:
+  role_order: [planner, solver, verifier, summarizer]
+
+agents:
+  - role: planner
+    generation_config:
+      temperature: 0.0
+      max_tokens: 192
+  - role: solver
+    generation_config:
+      temperature: 0.0
+      max_tokens: 320
+  - role: verifier
+    generation_config:
+      temperature: 0.0
+      max_tokens: 192
+  - role: summarizer
+    generation_config:
+      temperature: 0.0
+      max_tokens: 96
+  - role: single_agent
+    system_prompt: You are a direct single-agent reasoner.
+    generation_config:
+      temperature: 0.0
+      max_tokens: 256
+
+credit:
+  segment_window: 2
+  segment_boundary_roles: [verifier, summarizer]
+  weights:
+    outcome: 0.35
+    verifier: 0.4
+    dependency: 0.25
+
+repair:
+  turn_threshold: 0.55
+  subtrajectory_threshold: 0.55
+  require_verifier_issue: true
+  verifier_issue_threshold: 0.6
+  relax_on_failure: true
+  failure_margin: 0.08
+
+experience:
+  graph_dir: outputs/demo/graph
+  embed_model:
+  min_credit: 0.62
+  retrieval:
+    top_k: 2
+    expand_neighbors: false
+    role_match_only: true
+    exclude_same_sample: true
+    same_dataset_only: true
+    min_similarity: 0.3
+    question_overlap_weight: 0.2
+    min_question_overlap: 0.02
+    enabled_roles: [solver]
+
+training:
+  model_name_or_path: /home/fyk/models/Qwen/Qwen2.5-X.XB-Instruct
+  model_size: 7B
+  lora_template:
+    stage: sft
+    do_train: true
+    finetuning_type: lora
+    lora_rank: 8
+    lora_alpha: 16
+    per_device_train_batch_size: 1
+    gradient_accumulation_steps: 4
+    learning_rate: 0.0002
+    num_train_epochs: 1.0
+    cutoff_len: 2048
+    template: qwen
+  qlora_template:
+    stage: sft
+    do_train: true
+    finetuning_type: lora
+    quantization_bit: 4
+    lora_rank: 8
+    lora_alpha: 16
+    per_device_train_batch_size: 1
+    gradient_accumulation_steps: 4
+    learning_rate: 0.0002
+    num_train_epochs: 1.0
+    cutoff_len: 2048
+    template: qwen
+
+evaluation:
+  methods:
+    - single_agent
+    - static_multi_agent
+    - sirius_lite
+    - ours_wo_graph
+    - ours_wo_selective_repair
+    - trajectory_level_credit
+    - repair_only
+    - offline_sft_only
+    - ours_full

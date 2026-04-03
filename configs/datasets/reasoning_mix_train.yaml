@@ -1,0 +1,11 @@
+recipe: reasoning_mix
+split: train
+max_per_source: 400
+seed: 42
+output_path: outputs/data/reasoning_mix_train.jsonl
+include_sources:
+  - gsm8k
+  - commonsense_qa
+  - ai2_arc
+  - boolq
+  - pubmed_qa

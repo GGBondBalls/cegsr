@@ -1,0 +1,37 @@
+[build-system]
+requires = ["setuptools>=68", "wheel"]
+build-backend = "setuptools.build_meta"
+
+[project]
+name = "cegsr"
+version = "0.2.0"
+description = "CEG-SR: Causal Experience Graph with Selective Repair for self-evolving multi-agent systems."
+readme = "README.md"
+requires-python = ">=3.11"
+authors = [{name = "OpenAI"}]
+dependencies = [
+  "PyYAML>=6.0",
+  "requests>=2.31.0",
+  "datasets>=2.18.0",
+  "tqdm>=4.66.0",
+]
+
+[project.optional-dependencies]
+local = [
+  "transformers>=4.44.0",
+  "torch>=2.1.0",
+  "sentence-transformers>=3.0.0",
+]
+data = [
+  "datasets>=2.18.0",
+]
+test = ["pytest>=8.0.0"]
+
+[tool.setuptools]
+package-dir = {"" = "src"}
+
+[tool.setuptools.packages.find]
+where = ["src"]
+
+[tool.pytest.ini_options]
+testpaths = ["tests"]

@@ -1,0 +1,62 @@
+project:
+  name: cegsr_demo
+  output_dir: outputs/example
+
+task:
+  task_type: qa
+  dataset_path: examples/sample_dataset.jsonl
+
+backend:
+  kind: mock
+
+graph:
+  role_order: [planner, solver, verifier, summarizer]
+
+agents:
+  - role: planner
+  - role: solver
+  - role: verifier
+  - role: summarizer
+  - role: single_agent
+
+credit:
+  segment_window: 2
+  segment_boundary_roles: [verifier, summarizer]
+  weights:
+    outcome: 0.4
+    verifier: 0.35
+    dependency: 0.25
+
+repair:
+  turn_threshold: 0.45
+  subtrajectory_threshold: 0.45
+  require_verifier_issue: true
+  verifier_issue_threshold: 0.6
+  relax_on_failure: true
+  failure_margin: 0.08
+
+experience:
+  graph_dir: outputs/example/graph
+  embed_model:
+  min_credit: 0.6
+  retrieval:
+    top_k: 2
+    expand_neighbors: false
+    role_match_only: true
+    exclude_same_sample: true
+    same_dataset_only: true
+    min_similarity: 0.3
+    question_overlap_weight: 0.2
+    min_question_overlap: 0.02
+    enabled_roles: [solver]
+
+training:
+  model_name_or_path: mock
+  model_size: 7B
+
+evaluation:
+  methods:
+    - single_agent
+    - static_multi_agent
+    - sirius_lite
+    - ours_full
