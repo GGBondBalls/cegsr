@@ -413,23 +413,24 @@ def run_end_to_end_method(config: dict[str, Any], method_name: str, output_dir: 
     return current_eval_path, metrics
 
 
-def run_ablation_suite(config_or_path: str | dict[str, Any], output_dir: str | None = None) -> dict[str, dict]:
+def run_ablation_suite(config_or_path: str | dict[str, Any], output_dir: str | None = None, methods: list[str] | None = None) -> dict[str, dict]:
     config = load_config(config_or_path) if isinstance(config_or_path, (str, Path)) else config_or_path
     output_dir = output_dir or str(Path(config['project']['output_dir']) / 'ablations')
-    methods = config['evaluation'].get(
-        'methods',
-        [
-            'single_agent',
-            'static_multi_agent',
-            'sirius_lite',
-            'ours_wo_graph',
-            'ours_wo_selective_repair',
-            'trajectory_level_credit',
-            'repair_only',
-            'offline_sft_only',
-            'ours_full',
-        ],
-    )
+    if methods is None:
+        methods = config['evaluation'].get(
+            'methods',
+            [
+                'single_agent',
+                'static_multi_agent',
+                'sirius_lite',
+                'ours_wo_graph',
+                'ours_wo_selective_repair',
+                'trajectory_level_credit',
+                'repair_only',
+                'offline_sft_only',
+                'ours_full',
+            ],
+        )
     results: dict[str, dict] = {}
     for method in methods:
         _, metrics = run_end_to_end_method(config, method, output_dir)

@@ -2,7 +2,9 @@
   "permissions": {
     "allow": [
       "Bash(python -c \"import ast; ast.parse\\(open\\(''src/cegsr/trajectories/replay.py''\\).read\\(\\)\\); print\\(''syntax OK''\\)\")",
-      "Bash(python -c \"import ast; ast.parse\\(open\\(''src/cegsr/baselines/sirius_lite.py''\\).read\\(\\)\\); print\\(''syntax OK''\\)\")"
+      "Bash(python -c \"import ast; ast.parse\\(open\\(''src/cegsr/baselines/sirius_lite.py''\\).read\\(\\)\\); print\\(''syntax OK''\\)\")",
+      "Bash(python -c \"import ast; ast.parse\\(open\\('src/cegsr/workflows.py'\\).read\\(\\)\\); print\\('workflows OK'\\)\")",
+      "Bash(python -c \"import ast; ast.parse\\(open\\('scripts/run_ablation.py'\\).read\\(\\)\\); print\\('run_ablation OK'\\)\")"
     ]
   }
 }
