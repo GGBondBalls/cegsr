@@ -23,7 +23,7 @@ class SiriusLiteBaseline:
         if episode.metrics.get("accuracy", 0):
             return episode
         new_sample = deepcopy(sample)
-        new_sample.metadata["previous_failure"] = episode_to_markdown(episode)
+        new_sample.metadata["previous_failure"] = episode_to_markdown(episode, include_gold_answer=False)
         new_episode = self.runtime.run_sample(
             new_sample,
             use_retrieval=False,

@@ -795,3 +795,386 @@ python scripts/run_eval.py --episodes outputs/dual_4090/annotated.jsonl --output
 如果只保留一句总结，这一轮最重要的结论是：
 
 > 双 RTX4090 + vLLM 的服务器运行链路已经稳定跑通；在当前三数据集子集上，`raw == annotated < repaired`，再次证明当前 CEG-SR 的直接收益主要来自 selective repair，而不是 credit 标注本身或 graph retrieval。
+
+## 10. 2026-04-03：七数据集 paper benchmark 恢复、GSM8K 评测修复与全量 ablation
+
+这一轮工作的重点，不再是继续扩展方法模块，而是把“论文级 benchmark 是否真正跑完整、评测协议是否可信、全量 ablation 是否能一次性跑完”这三件事情补齐。
+
+和上一轮相比，这一轮有两个明确目标：
+
+1. 把 benchmark 从“退化后的三数据集子集”恢复为面向论文主实验的七数据集统一评测集；
+2. 修复会直接污染实验结论的工程问题，尤其是：
+   - `gsm8k` 被 free-form exact match 错误压成 `0.0`；
+   - `run_ablation.sh` 长时间无输出，看起来像“卡死”，但实际上只是没有进度可视化。
+
+### 10.1 本轮代码优化
+
+这一轮没有新加方法模块，主要是把评测层与运行层修正确保结果可信。
+
+#### 改动 A：补全七数据集 paper benchmark 数据准备
+
+上一轮已经把数据构建入口改造成可回退的统一 builder；本轮实际在服务器上验证后，已经可以稳定构造如下七个来源组成的 paper benchmark：
+
+- `college_physics`
+- `college_chemistry`
+- `pubmed_qa`
+- `gsm8k`
+- `commonsense_qa`
+- `ai2_arc`
+- `boolq`
+
+涉及文件：
+
+- [`../src/cegsr/data/builders.py`](../src/cegsr/data/builders.py)
+- [`../configs/datasets/paper_reasoning_eval.yaml`](../configs/datasets/paper_reasoning_eval.yaml)
+- [`../configs/datasets/paper_reasoning_train.yaml`](../configs/datasets/paper_reasoning_train.yaml)
+- [`../configs/profiles/paper_benchmark.yaml`](../configs/profiles/paper_benchmark.yaml)
+- [`../configs/profiles/dual_4090_vllm_paper.yaml`](../configs/profiles/dual_4090_vllm_paper.yaml)
+
+#### 改动 B：修复 GSM8K 数值评测协议
+
+之前 `gsm8k` 复用通用 `QATask` 的 free-form exact match 逻辑，导致诸如：
+
+- `Final Answer: 42`
+- `The answer is 42`
+- `42 apples`
+
+这类本质正确的输出，仍然可能因为字符串不完全相等而被记为错误。
+
+本轮在 [`../src/cegsr/tasks/qa.py`](../src/cegsr/tasks/qa.py) 中新增了：
+
+- `numeric_accuracy`
+- 对 `gsm8k` / `math_word_problem` 的数值归一化比较
+- 对 `Final Answer: ...` / `Answer: ...` / `#### ...` 等数值模式的抽取
+- 对带推理过程文本时“最后数值答案”的提取
+
+这一步不是“刷分技巧”，而是把原本错误的评测协议修正为更接近 GSM8K 常见评测方式的协议。
+
+#### 改动 C：补齐 ablation 的进度可见性与健康检查
+
+之前 `run_ablation.sh` 真正的问题不是无法运行，而是：
+
+1. 前三个 baseline：
+   - `single_agent`
+   - `static_multi_agent`
+   - `sirius_lite`
+   没有进度条；
+2. 生成的 `run_ablation.sh` 没有像 `run_pipeline.sh` 一样先做推理服务健康检查；
+3. 因此在服务器上长时间没有输出时，会被误认为“脚本卡死”。
+
+本轮修改后：
+
+- [`../src/cegsr/workflows.py`](../src/cegsr/workflows.py) 为每个方法增加了：
+  - `[Ablation] Start ...`
+  - `[Ablation] Done ...`
+  - baseline 级别的逐样本进度条
+- [`../src/cegsr/launchers.py`](../src/cegsr/launchers.py) 为 `run_ablation.sh` 增加了：
+  - `/v1/models` 健康检查
+  - 与当前 profile 对应的 `launch_inference_server.sh` 提示路径
+
+这一步本质上是“实验可观测性修复”，不是方法改动。
+
+### 10.2 数据准备结果：七数据集 eval 已恢复，train 仍不平衡
+
+#### 10.2.1 训练集构建
+
+运行命令：
+
+```bash
+python scripts/prepare_data.py --config configs/datasets/paper_reasoning_train.yaml
+```
+
+结果：
+
+- `num_rows = 2010`
+
+分来源如下：
+
+- `college_physics = 5`
+- `college_chemistry = 5`
+- `pubmed_qa = 400`
+- `gsm8k = 400`
+- `commonsense_qa = 400`
+- `ai2_arc = 400`
+- `boolq = 400`
+
+这个结果很重要。它说明：
+
+1. `paper_reasoning_train` 已经可以跑通；
+2. 但 `college_physics` / `college_chemistry` 的 train 端目前只回退到了 `dev`，各只有 `5` 条；
+3. 因而当前“七数据集完整恢复”首先成立在 **eval benchmark** 层面，而不是训练集规模已经完全平衡。
+
+换句话说，本轮已经解决了“主评测集不完整”的问题，但还没有解决“训练集同样完整且平衡”的问题。
+
+#### 10.2.2 评测集构建
+
+运行命令：
+
+```bash
+bash outputs/dual_4090_paper/prepare_data.sh
+```
+
+结果：
+
+- `num_rows = 700`
+- 七个数据集各 `100` 条
+
+这意味着当前已经具备一个真正可用于主实验的统一七数据集 benchmark：
+
+- `college_physics`
+- `college_chemistry`
+- `pubmed_qa`
+- `gsm8k`
+- `commonsense_qa`
+- `ai2_arc`
+- `boolq`
+
+### 10.3 双 4090 + vLLM 主流程结果
+
+运行命令：
+
+```bash
+bash outputs/dual_4090_paper/run_pipeline.sh
+```
+
+耗时：
+
+- `Collect 700`: 约 `39m 53s`
+- `Credit 700`: 近乎瞬时
+- `Repair 700`: 约 `13m 22s`
+
+输出指标：
+
+- `accuracy = 0.8043`
+- `exact_match = 0.2429`
+- `mcq_accuracy = 0.6857`
+- `repair_coverage = 0.2814`
+- `repair_success_rate = 0.3046`
+- `num_changed_repairs = 197`
+- `graph_num_nodes = 2137`
+- `graph_num_edges = 50806`
+
+分数据集结果：
+
+- `college_physics = 0.82`
+- `college_chemistry = 0.59`
+- `pubmed_qa = 0.78`
+- `gsm8k = 0.83`
+- `commonsense_qa = 0.88`
+- `ai2_arc = 0.90`
+- `boolq = 0.83`
+
+### 10.4 这一轮最关键的直接结论
+
+#### 结论 1：GSM8K 的 `0.0` 不是模型不会，而是评测协议错了
+
+上一轮最突出的异常是：
+
+- `gsm8k = 0.0`
+
+而本轮只改了评测协议，没有引入新的方法模块后：
+
+- `gsm8k = 0.83`
+
+这说明上一轮 `gsm8k = 0.0` 的主要来源并不是模型完全不会做数学，而是：
+
+- free-form exact match 把本来正确的数值答案系统性误判为错。
+
+因此，这一轮等于修复了一个会直接污染论文主表的评测 bug。
+
+#### 结论 2：七数据集 benchmark 已经可以用于后续主实验
+
+本轮最大的实验价值不只是“又跑了一次”，而是：
+
+- benchmark 不再是三数据集子集；
+- `gsm8k` 与 `boolq` 不再缺失；
+- `college_physics` 与 `college_chemistry` 也已并入统一评测集；
+- 可以开始在完整七数据集上讨论方法增益，而不是继续停留在“子集兼容性验证”。
+
+这意味着项目现在正式进入：
+
+> 在统一七数据集 paper benchmark 上做主实验与消融，而不是继续围绕数据缺失与脚本故障兜圈子。
+
+#### 结论 3：当前 strongest path 仍然是 repair，不是 graph retrieval
+
+虽然这一轮把 graph 也完整构建出来了，但从主流程结果和后面的 ablation 看，当前最稳定的收益来源仍然是 repair 分支，而不是 retrieval 分支。
+
+这一点会在 10.5 的消融结果里表现得非常清楚。
+
+### 10.5 七数据集全量 ablation 结果
+
+运行命令：
+
+```bash
+bash outputs/dual_4090_paper/run_ablation.sh
+```
+
+这一次脚本不再“看起来卡住”，而是完整显示了各方法的逐个运行过程与结束分数。
+
+核心总表如下：
+
+| method | accuracy | exact_match | repair_coverage | retrieval_proxy |
+|---|---:|---:|---:|---:|
+| single_agent | 0.2943 | 0.0457 | 0.0 | 0.0 |
+| static_multi_agent | 0.7243 | 0.2229 | 0.0 | 0.0 |
+| sirius_lite | 0.9543 | 0.2986 | 0.0 | 0.0 |
+| ours_wo_graph | 0.8043 | 0.2429 | 0.2814 | 0.0 |
+| ours_wo_selective_repair | 0.7171 | 0.2086 | 0.0 | 0.7198 |
+| trajectory_level_credit | 0.7229 | 0.2271 | 0.0 | 0.0 |
+| repair_only | 0.8043 | 0.2429 | 0.2814 | 0.0 |
+| offline_sft_only | 0.7300 | 0.2314 | 0.0 | 0.0 |
+| ours_full | 0.7200 | 0.2086 | 0.0 | 0.7228 |
+
+#### 10.5.1 结果解读 A：single-agent 与 static multi-agent 的层级关系清晰
+
+- `single_agent = 0.2943`
+- `static_multi_agent = 0.7243`
+
+这说明当前多角色协作本身是有明显收益的；也说明 benchmark 不是“过于简单到随便都高分”。
+
+#### 10.5.2 结果解读 B：repair 依然是当前最稳的正向增益来源
+
+重点看下面几组：
+
+- `static_multi_agent = 0.7243`
+- `trajectory_level_credit = 0.7229`
+- `offline_sft_only = 0.7300`
+- `ours_wo_graph = 0.8043`
+
+这说明：
+
+1. 仅做 trajectory-level credit，并不能直接带来明显提升；
+2. 仅做 offline SFT 数据导出，也没有自动转化成在线性能收益；
+3. 真正把准确率从 `0.72x` 区间推高到 `0.80x` 区间的，仍然是 repair。
+
+因此，这一轮再次支持：
+
+> 当前 CEG-SR 最可信的直接收益仍然来自 selective repair，而不是 credit 标注本身。
+
+#### 10.5.3 结果解读 C：graph retrieval 依然是负收益
+
+重点看：
+
+- `ours_wo_graph = 0.8043`
+- `ours_full = 0.7200`
+- `ours_wo_selective_repair = 0.7171`
+
+以及：
+
+- `retrieval_proxy(ours_full) = 0.7228`
+- `retrieval_proxy(ours_wo_selective_repair) = 0.7198`
+
+这说明：
+
+1. 检索并不是完全没有命中；
+2. 但“命中了”并不等于“最终有帮助”；
+3. 当前 retrieval proxy 与最终 answer accuracy 并不对齐；
+4. 一旦进入 graph retrieval 路径，结果会从 `0.8043` 明显掉回 `0.72` 左右。
+
+因此，graph retrieval 目前仍不是一个正向主结果来源，甚至在七数据集完整 benchmark 上再次表现为稳定负收益。
+
+#### 10.5.4 结果解读 D：`repair_only` 与 `ours_wo_graph` 当前是同一路径
+
+这两个结果完全一致：
+
+- `repair_only = 0.8043`
+- `ours_wo_graph = 0.8043`
+
+这不是偶然，而是当前代码定义下两者本来就是同一条执行路径：
+
+- collect
+- credit
+- repair
+- 不启用 graph retrieval
+
+因此，这个“完全相同的分数”不应被额外过度解读为新科学发现；它主要说明当前 ablation 定义下，这两个名字对应的是同一 artifact。
+
+#### 10.5.5 结果解读 E：`ours_full` 的 `repair_coverage = 0` 不是 repair 没起作用
+
+`ours_full` 指标里有一个很容易误读的地方：
+
+- `repair_coverage = 0.0`
+- `num_changed_repairs = 0`
+
+这并不意味着本方法完全没做 repair，而是因为当前 ablation 定义中，`ours_full` 最终评估的是：
+
+- 基于 repaired / annotated graph 构建后的 **fresh retrieved evaluation**
+
+也就是说最终评估文件是 `retrieved_eval.jsonl`，不是 `repaired.jsonl` 本身。因此它不再携带 repair record，`repair_coverage = 0` 在这个 artifact 上是预期现象。
+
+这也说明：
+
+> `run_pipeline.sh` 里的 repaired 主流程结果，不能和 `ours_full` 这个 graph-aware fresh evaluation artifact 直接当成同一个东西横比。
+
+### 10.6 当前最值得重视的新现象：Sirius-lite 异常强
+
+本轮最需要认真对待的不是 graph，而是：
+
+- `sirius_lite = 0.9543`
+
+它不仅高于：
+
+- `static_multi_agent = 0.7243`
+- `ours_wo_graph = 0.8043`
+- `ours_full = 0.7200`
+
+而且几乎在所有子数据集上都显著领先。
+
+这件事目前至少说明三点：
+
+1. 当前 selective repair 还没有击败“整轨迹失败后全量重写”的强基线；
+2. `sirius_lite` 现在应被视为真正的 strongest baseline，而不是弱参考；
+3. 后续实验不应该回避这个结果，而应该专门解释：
+   - 为什么它这么强；
+   - 它带来的增益到底来自：
+     - 失败轨迹提示本身，
+     - 第二次完整推理预算，
+     - 还是整轨迹 regeneration 相比局部 repair 在当前 benchmark 上更合适。
+
+换句话说，这一轮虽然再次确认了 repair 的价值，但也暴露出一个更强、更值得正面分析的 baseline 对手。
+
+### 10.7 本轮综合判断
+
+结合本轮代码修复与全量实验，我认为当前阶段最合理的判断是：
+
+#### 判断 1：完整七数据集 benchmark 已经恢复
+
+这一点已经可以视为完成：
+
+- eval benchmark 七数据集齐全；
+- GSM8K 评测不再失真；
+- BoolQ 不再缺失；
+- 可以开始在统一 benchmark 上稳定重复主实验。
+
+#### 判断 2：当前主增益仍来自 repair，而不是 retrieval
+
+证据非常稳定：
+
+- `ours_wo_graph = 0.8043`
+- `ours_full = 0.7200`
+- `ours_wo_selective_repair = 0.7171`
+
+graph retrieval 仍然是当前版本的负收益分支。
+
+#### 判断 3：接下来最优先的实验方向，不是继续修 benchmark，而是解释强 baseline
+
+上一阶段的主要问题是：
+
+- benchmark 不完整；
+- GSM8K 评测协议错误；
+- ablation 长跑不可观测。
+
+这些问题现在都已经被解决或显著缓解。接下来最值得投入时间的，已经不再是“让实验跑起来”，而是：
+
+1. 解释 `sirius_lite` 为什么显著强于 selective repair；
+2. 判断这种优势是方法性的，还是协议 / 预算层面的；
+3. 进一步设计更公平的对照：
+   - double-pass no-feedback
+   - full-regeneration with equal budget
+   - selective-repair with retrieval-memory support
+
+### 10.8 本轮一句话总结
+
+如果只保留一句总结，本轮最重要的结论是：
+
+> 通过修复 GSM8K 数值评测与 ablation 可观测性，CEG-SR 已经首次在完整七数据集 paper benchmark 上拿到了可信的全量结果；当前 repair 仍然是最稳定的正向收益来源，而 graph retrieval 依旧负收益，同时 Sirius-lite 意外成为新的 strongest baseline，后续实验重点应转向解释并正面对比这一强基线。

@@ -6,18 +6,21 @@ from cegsr.trajectories.schema import EpisodeTrajectory
 from cegsr.utils.io import ensure_dir
 
 
-def episode_to_markdown(episode: EpisodeTrajectory) -> str:
+def episode_to_markdown(episode: EpisodeTrajectory, include_gold_answer: bool = True) -> str:
     """Render one episode into a human-readable markdown trace."""
     lines = [
         f"# Episode {episode.episode_id}",
         "",
         f"**Question**: {episode.sample.question}",
         f"**Final prediction**: {episode.final_prediction}",
-        f"**Gold answer**: {episode.sample.answer}",
+    ]
+    if include_gold_answer:
+        lines.append(f"**Gold answer**: {episode.sample.answer}")
+    lines.extend([
         f"**Metrics**: {episode.metrics}",
         "",
         "## Turns",
-    ]
+    ])
     for turn in episode.turns:
         lines.extend(
             [
