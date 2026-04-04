@@ -20,7 +20,9 @@
       "Bash(python3 -c \"import sys, json; data = json.load\\(sys.stdin\\); print\\(json.dumps\\(data.get\\('credit_records', []\\)[:2], indent=2\\)\\)\")",
       "Bash(python -c \"import json, sys; data = json.load\\(sys.stdin\\); print\\(json.dumps\\(data, indent=2\\)\\)\")",
       "Bash(python3)",
-      "WebFetch(domain:raw.githubusercontent.com)"
+      "WebFetch(domain:raw.githubusercontent.com)",
+      "Bash(python -c \"import ast; [ast.parse\\(open\\(f, encoding='utf-8'\\).read\\(\\)\\) for f in ['src/cegsr/training/exporters.py', 'src/cegsr/training/llamafactory_adapter.py', 'src/cegsr/training/runner.py', 'src/cegsr/workflows.py', 'scripts/run_iterative.py']] ; print\\('All files parse OK'\\)\")",
+      "Bash(python -c ':*)"
     ]
   }
 }

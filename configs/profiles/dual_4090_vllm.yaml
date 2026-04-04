@@ -29,7 +29,9 @@ serving:
 
 training:
   model_name_or_path: /home/fyk/models/Qwen/Qwen2.5-X.XB-Instruct
-  model_size: 14B
+  model_size: 7B
+  mode: qlora
+  high_credit_threshold: 0.65
   distributed:
     gpus: [0, 1]
     nproc_per_node: 2
@@ -38,16 +40,3 @@ training:
     master_addr: 127.0.0.1
     master_port: 29500
     force_torchrun: true
-  qlora_template:
-    stage: sft
-    do_train: true
-    finetuning_type: lora
-    quantization_bit: 4
-    lora_rank: 8
-    lora_alpha: 16
-    per_device_train_batch_size: 1
-    gradient_accumulation_steps: 8
-    learning_rate: 0.0002
-    num_train_epochs: 1.0
-    cutoff_len: 2048
-    template: qwen

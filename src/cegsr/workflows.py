@@ -26,8 +26,10 @@ from cegsr.tasks.pubmedqa_style import PubMedQAStyleTask
 from cegsr.tasks.qa import QATask
 from cegsr.trajectories.schema import CreditRecord, EpisodeTrajectory, TaskSample
 from cegsr.trajectories.segmentation import segment_episode
-from cegsr.training.exporters import export_preference_pairs, export_reward_data, export_role_sft
+from cegsr.training.exporters import export_credit_guided_sft, export_preference_pairs, export_reward_data, export_role_sft
 from cegsr.training.llamafactory_adapter import generate_llamafactory_project
+from cegsr.training.registry import register_checkpoint, resolve_checkpoint
+from cegsr.training.runner import run_training_pipeline
 from cegsr.utils.io import ensure_dir, read_jsonl, write_csv, write_json, write_jsonl
 from cegsr.utils.logging import get_logger
 from cegsr.utils.modeling import resolve_local_model_path
@@ -276,6 +278,7 @@ def build_experience_graph(episodes_path: str, config_or_path: str | dict[str, A
 
 
 def export_training_data(episodes_path: str, config_or_path: str | dict[str, Any], export_dir: str | None = None) -> dict[str, str]:
+    """Export ALL turns (no credit filtering). For credit-guided export, use export_credit_guided_training_data."""
     config = load_config(config_or_path) if isinstance(config_or_path, (str, Path)) else config_or_path
     episodes = load_episodes(episodes_path)
     export_dir = export_dir or str(Path(config['project']['output_dir']) / 'training_data')
@@ -289,11 +292,213 @@ def export_training_data(episodes_path: str, config_or_path: str | dict[str, Any
             model_size_hint=config['training'].get('model_size'),
         ),
         output_dir=str(Path(config['project']['output_dir']) / 'llamafactory_runs'),
-        lora_template=config['training'].get('lora_template', {}),
-        qlora_template=config['training'].get('qlora_template', {}),
+        lora_template=config['training'].get('lora_template'),
+        qlora_template=config['training'].get('qlora_template'),
+        dpo_template=config['training'].get('dpo_template'),
         distributed_config=config['training'].get('distributed'),
     )
     return manifest
+
+
+def export_credit_guided_training_data(
+    episodes_path: str,
+    config_or_path: str | dict[str, Any],
+    export_dir: str | None = None,
+    high_credit_threshold: float = 0.65,
+) -> dict[str, str]:
+    """Export training data with credit-guided filtering (only high-quality turns)."""
+    config = load_config(config_or_path) if isinstance(config_or_path, (str, Path)) else config_or_path
+    episodes = load_episodes(episodes_path)
+    export_dir = export_dir or str(Path(config['project']['output_dir']) / 'training_data')
+
+    threshold = config.get('training', {}).get('high_credit_threshold', high_credit_threshold)
+    manifest = export_credit_guided_sft(episodes, export_dir, high_credit_threshold=threshold)
+    export_preference_pairs(episodes, export_dir)
+    export_reward_data(episodes, export_dir)
+
+    generate_llamafactory_project(
+        export_dir=export_dir,
+        model_name_or_path=resolve_local_model_path(
+            config['training']['model_name_or_path'],
+            model_size_hint=config['training'].get('model_size'),
+        ),
+        output_dir=str(Path(config['project']['output_dir']) / 'llamafactory_runs'),
+        lora_template=config['training'].get('lora_template'),
+        qlora_template=config['training'].get('qlora_template'),
+        dpo_template=config['training'].get('dpo_template'),
+        distributed_config=config['training'].get('distributed'),
+    )
+    return manifest
+
+
+def run_training(
+    config_or_path: str | dict[str, Any],
+    export_dir: str | None = None,
+    training_mode: str | None = None,
+    run_dpo: bool = False,
+    merge_after: bool = True,
+) -> dict[str, str]:
+    """
+    Execute LLaMA-Factory training from previously exported data.
+
+    Returns dict with adapter/model paths.
+    """
+    config = load_config(config_or_path) if isinstance(config_or_path, (str, Path)) else config_or_path
+    export_dir = export_dir or str(Path(config['project']['output_dir']) / 'training_data')
+    training_cfg = config.get('training', {})
+    mode = training_mode or training_cfg.get('mode', 'qlora')
+
+    results = run_training_pipeline(
+        export_dir=export_dir,
+        training_mode=mode,
+        run_dpo_stage=run_dpo,
+        merge_after_training=merge_after,
+        distributed_config=training_cfg.get('distributed'),
+        timeout_per_stage=training_cfg.get('timeout_per_stage'),
+    )
+
+    # Register trained model in checkpoint registry
+    registry_path = str(Path(config['project']['output_dir']) / 'checkpoint_registry.json')
+    if 'merged_model' in results:
+        register_checkpoint(registry_path, 'latest_merged', results['merged_model'], {'mode': mode})
+    if 'sft_adapter' in results:
+        register_checkpoint(registry_path, 'latest_sft', results['sft_adapter'], {'mode': mode})
+
+    return results
+
+
+def run_iterative(
+    config_or_path: str | dict[str, Any],
+    output_dir: str | None = None,
+    max_iterations: int = 3,
+    training_mode: str | None = None,
+    run_dpo: bool = False,
+    high_credit_threshold: float = 0.65,
+    use_train_split: bool = True,
+) -> dict[str, Any]:
+    """
+    Run the full iterative self-improvement loop.
+
+    For each iteration:
+        1. Collect trajectories (on train split)
+        2. Assign fine-grained credit
+        3. Selective repair
+        4. Build/update experience graph
+        5. Export credit-guided training data
+        6. Train (SFT + optional DPO) via LLaMA-Factory
+        7. Merge LoRA → update model path for next iteration
+        8. Evaluate (on eval split) with the fine-tuned model
+
+    Returns per-iteration metrics and final results.
+    """
+    config = load_config(config_or_path) if isinstance(config_or_path, (str, Path)) else deepcopy(config_or_path)
+    if output_dir:
+        config['project']['output_dir'] = output_dir
+    base_output = Path(config['project']['output_dir'])
+
+    # Resolve train/eval dataset paths
+    train_dataset = config.get('task', {}).get('train_dataset_path')
+    eval_dataset = config['task']['dataset_path']
+    if use_train_split and not train_dataset:
+        logger.warning('No train_dataset_path configured; using eval dataset for both train and eval')
+        train_dataset = eval_dataset
+
+    mode = training_mode or config.get('training', {}).get('mode', 'qlora')
+    iteration_results: list[dict[str, Any]] = []
+
+    for iteration in range(max_iterations):
+        iter_dir = base_output / f'iteration_{iteration}'
+        iter_config = deepcopy(config)
+        iter_config['project']['output_dir'] = str(iter_dir)
+        iter_config.setdefault('experience', {})['graph_dir'] = str(iter_dir / 'graph')
+
+        logger.info('=== Iteration %d/%d ===', iteration, max_iterations - 1)
+
+        # Step 1: Collect on train split
+        if use_train_split and train_dataset:
+            iter_config['task']['dataset_path'] = train_dataset
+        raw_file = str(iter_dir / 'raw.jsonl')
+        collect_episodes(iter_config, output_path=raw_file, use_retrieval=False)
+
+        # Step 2: Credit assignment
+        annotated_file = str(iter_dir / 'annotated.jsonl')
+        annotate_episodes(raw_file, iter_config, output_path=annotated_file)
+
+        # Step 3: Selective repair
+        repaired_file = str(iter_dir / 'repaired.jsonl')
+        repair_episodes(annotated_file, iter_config, output_path=repaired_file)
+
+        # Step 4: Build/update experience graph
+        graph_dir = str(iter_dir / 'graph')
+        build_experience_graph(repaired_file, iter_config, graph_dir=graph_dir)
+
+        # Step 5: Export credit-guided training data
+        export_dir = str(iter_dir / 'training_data')
+        export_credit_guided_training_data(
+            repaired_file, iter_config, export_dir=export_dir,
+            high_credit_threshold=high_credit_threshold,
+        )
+
+        # Step 6: Train
+        train_results = run_training(
+            iter_config, export_dir=export_dir,
+            training_mode=mode, run_dpo=run_dpo, merge_after=True,
+        )
+
+        # Step 7: Swap model for next iteration
+        merged_model = train_results.get('merged_model')
+        if merged_model and Path(merged_model).exists():
+            logger.info('Swapping model to: %s', merged_model)
+            config['backend']['model'] = merged_model
+            config['backend'].pop('model_size', None)
+            config['training']['model_name_or_path'] = merged_model
+            config['training'].pop('model_size', None)
+        else:
+            logger.warning('No merged model found, next iteration uses the same base model')
+
+        # Step 8: Evaluate on eval split
+        eval_config = deepcopy(config)
+        eval_config['task']['dataset_path'] = eval_dataset
+        eval_config['project']['output_dir'] = str(iter_dir)
+        eval_raw = str(iter_dir / 'eval_raw.jsonl')
+        collect_episodes(eval_config, output_path=eval_raw, use_retrieval=False)
+        eval_annotated = str(iter_dir / 'eval_annotated.jsonl')
+        annotate_episodes(eval_raw, eval_config, output_path=eval_annotated)
+        eval_repaired = str(iter_dir / 'eval_repaired.jsonl')
+        repair_episodes(eval_annotated, eval_config, output_path=eval_repaired)
+        eval_metrics = evaluate_episode_file(eval_repaired, str(iter_dir / 'eval'), graph_dir=graph_dir)
+
+        iter_result = {
+            'iteration': iteration,
+            'train_results': train_results,
+            'eval_metrics': eval_metrics,
+            'model_path': merged_model or config.get('backend', {}).get('model', ''),
+        }
+        iteration_results.append(iter_result)
+        write_json(str(iter_dir / 'iteration_result.json'), iter_result)
+        logger.info(
+            'Iteration %d complete: eval_accuracy=%.4f',
+            iteration, eval_metrics.get('accuracy', 0),
+        )
+
+        # Early stopping: check if accuracy saturated
+        if iteration >= 1:
+            prev_acc = iteration_results[-2]['eval_metrics'].get('accuracy', 0)
+            curr_acc = eval_metrics.get('accuracy', 0)
+            if curr_acc <= prev_acc + 0.005:
+                logger.info('Accuracy saturated (%.4f → %.4f), stopping early', prev_acc, curr_acc)
+                break
+
+    # Save summary
+    summary = {
+        'total_iterations': len(iteration_results),
+        'iterations': iteration_results,
+        'final_accuracy': iteration_results[-1]['eval_metrics'].get('accuracy', 0) if iteration_results else 0,
+    }
+    write_json(str(base_output / 'iterative_summary.json'), summary)
+    logger.info('Iterative training complete: %d iterations, final_accuracy=%.4f',
+                summary['total_iterations'], summary['final_accuracy'])
+    return summary
 
 
 def run_pipeline(config_or_path: str | dict[str, Any], output_dir: str | None = None) -> dict[str, Any]:

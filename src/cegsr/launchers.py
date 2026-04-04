@@ -219,4 +219,19 @@ def generate_experiment_scripts(config_path: str | Path, output_dir: str | None 
         launcher_path.write_text(_build_vllm_server_script(script_dir, repo_root, serving), encoding="utf-8")
         scripts["serving"] = _project_relative(launcher_path, repo_root)
 
+    # Iterative training script
+    iterative_lines = _script_header(script_dir, repo_root)
+    iterative_lines.extend(_build_inference_healthcheck_lines(config))
+    iterative_lines.append(
+        _quote_command([
+            "python", "scripts/run_iterative.py",
+            "--config", config_ref,
+            "--max-iterations", "3",
+            "--mode", config.get("training", {}).get("mode", "qlora"),
+        ])
+    )
+    iterative_path = script_dir / "run_iterative.sh"
+    iterative_path.write_text("\n".join(iterative_lines) + "\n", encoding="utf-8")
+    scripts["iterative"] = _project_relative(iterative_path, repo_root)
+
     return scripts

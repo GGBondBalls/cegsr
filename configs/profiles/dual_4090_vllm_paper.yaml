@@ -5,6 +5,7 @@ project:
 
 task:
   dataset_path: outputs/data/paper_reasoning_eval.jsonl
+  train_dataset_path: outputs/data/paper_reasoning_train.jsonl
   prepare_config: configs/datasets/paper_reasoning_eval.yaml
 
 experience:

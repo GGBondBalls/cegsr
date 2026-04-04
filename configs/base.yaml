@@ -77,31 +77,76 @@ experience:
 training:
   model_name_or_path: /home/fyk/models/Qwen/Qwen2.5-X.XB-Instruct
   model_size: 7B
+  mode: qlora
+  high_credit_threshold: 0.65
   lora_template:
     stage: sft
     do_train: true
     finetuning_type: lora
     lora_rank: 8
     lora_alpha: 16
-    per_device_train_batch_size: 1
-    gradient_accumulation_steps: 4
-    learning_rate: 0.0002
-    num_train_epochs: 1.0
-    cutoff_len: 2048
+    lora_dropout: 0.05
+    lora_target: all
     template: qwen
+    cutoff_len: 2048
+    per_device_train_batch_size: 2
+    gradient_accumulation_steps: 8
+    learning_rate: 0.0001
+    num_train_epochs: 3.0
+    lr_scheduler_type: cosine
+    warmup_ratio: 0.1
+    bf16: true
+    logging_steps: 10
+    save_steps: 500
+    plot_loss: true
+    overwrite_output_dir: true
   qlora_template:
     stage: sft
     do_train: true
     finetuning_type: lora
     quantization_bit: 4
+    quantization_method: bnb
+    double_quantization: true
     lora_rank: 8
     lora_alpha: 16
-    per_device_train_batch_size: 1
-    gradient_accumulation_steps: 4
-    learning_rate: 0.0002
-    num_train_epochs: 1.0
-    cutoff_len: 2048
+    lora_dropout: 0.05
+    lora_target: all
     template: qwen
+    cutoff_len: 2048
+    per_device_train_batch_size: 2
+    gradient_accumulation_steps: 8
+    learning_rate: 0.0001
+    num_train_epochs: 3.0
+    lr_scheduler_type: cosine
+    warmup_ratio: 0.1
+    bf16: true
+    logging_steps: 10
+    save_steps: 500
+    plot_loss: true
+    overwrite_output_dir: true
+  dpo_template:
+    stage: dpo
+    do_train: true
+    finetuning_type: lora
+    lora_rank: 8
+    lora_alpha: 16
+    lora_dropout: 0.05
+    lora_target: all
+    pref_beta: 0.1
+    pref_loss: sigmoid
+    template: qwen
+    cutoff_len: 2048
+    per_device_train_batch_size: 1
+    gradient_accumulation_steps: 8
+    learning_rate: 0.000005
+    num_train_epochs: 1.0
+    lr_scheduler_type: cosine
+    warmup_ratio: 0.1
+    bf16: true
+    logging_steps: 10
+    save_steps: 500
+    plot_loss: true
+    overwrite_output_dir: true
 
 evaluation:
   methods:
