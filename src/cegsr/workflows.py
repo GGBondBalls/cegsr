@@ -26,6 +26,7 @@ from cegsr.tasks.pubmedqa_style import PubMedQAStyleTask
 from cegsr.tasks.qa import QATask
 from cegsr.trajectories.schema import CreditRecord, EpisodeTrajectory, TaskSample
 from cegsr.trajectories.segmentation import segment_episode
+from cegsr.serving import create_server_manager
 from cegsr.training.exporters import export_credit_guided_sft, export_preference_pairs, export_reward_data, export_role_sft
 from cegsr.training.llamafactory_adapter import generate_llamafactory_project
 from cegsr.training.registry import register_checkpoint, resolve_checkpoint
@@ -379,15 +380,14 @@ def run_iterative(
     """
     Run the full iterative self-improvement loop.
 
-    For each iteration:
-        1. Collect trajectories (on train split)
-        2. Assign fine-grained credit
-        3. Selective repair
-        4. Build/update experience graph
-        5. Export credit-guided training data
-        6. Train (SFT + optional DPO) via LLaMA-Factory
-        7. Merge LoRA → update model path for next iteration
-        8. Evaluate (on eval split) with the fine-tuned model
+    Each iteration follows the cycle::
+
+        [vLLM ON]  collect → credit → repair → graph → export
+        [vLLM OFF] train (SFT + optional DPO) → merge LoRA
+        [vLLM ON]  eval (with the new merged model)
+
+    The vLLM server is stopped before training to free GPU memory and
+    restarted afterwards with the newly merged model.
 
     Returns per-iteration metrics and final results.
     """
@@ -404,90 +404,126 @@ def run_iterative(
         train_dataset = eval_dataset
 
     mode = training_mode or config.get('training', {}).get('mode', 'qlora')
+
+    # Server manager — handles vLLM start/stop around training
+    server = create_server_manager(config)
     iteration_results: list[dict[str, Any]] = []
 
-    for iteration in range(max_iterations):
-        iter_dir = base_output / f'iteration_{iteration}'
-        iter_config = deepcopy(config)
-        iter_config['project']['output_dir'] = str(iter_dir)
-        iter_config.setdefault('experience', {})['graph_dir'] = str(iter_dir / 'graph')
+    try:
+        for iteration in range(max_iterations):
+            iter_dir = base_output / f'iteration_{iteration}'
+            iter_config = deepcopy(config)
+            iter_config['project']['output_dir'] = str(iter_dir)
+            iter_config.setdefault('experience', {})['graph_dir'] = str(iter_dir / 'graph')
 
-        logger.info('=== Iteration %d/%d ===', iteration, max_iterations - 1)
+            logger.info('========== Iteration %d/%d ==========', iteration, max_iterations - 1)
 
-        # Step 1: Collect on train split
-        if use_train_split and train_dataset:
-            iter_config['task']['dataset_path'] = train_dataset
-        raw_file = str(iter_dir / 'raw.jsonl')
-        collect_episodes(iter_config, output_path=raw_file, use_retrieval=False)
+            # ----------------------------------------------------------
+            # Phase A: Inference (needs vLLM)
+            # ----------------------------------------------------------
+            if server and not server.health_check():
+                current_model = config.get('backend', {}).get('model')
+                logger.info('vLLM not running, starting with model: %s', current_model)
+                server.start(model_path=current_model)
 
-        # Step 2: Credit assignment
-        annotated_file = str(iter_dir / 'annotated.jsonl')
-        annotate_episodes(raw_file, iter_config, output_path=annotated_file)
+            # Step 1: Collect on train split
+            if use_train_split and train_dataset:
+                iter_config['task']['dataset_path'] = train_dataset
+            raw_file = str(iter_dir / 'raw.jsonl')
+            collect_episodes(iter_config, output_path=raw_file, use_retrieval=False)
 
-        # Step 3: Selective repair
-        repaired_file = str(iter_dir / 'repaired.jsonl')
-        repair_episodes(annotated_file, iter_config, output_path=repaired_file)
+            # Step 2: Credit assignment (CPU-only, no vLLM needed)
+            annotated_file = str(iter_dir / 'annotated.jsonl')
+            annotate_episodes(raw_file, iter_config, output_path=annotated_file)
 
-        # Step 4: Build/update experience graph
-        graph_dir = str(iter_dir / 'graph')
-        build_experience_graph(repaired_file, iter_config, graph_dir=graph_dir)
+            # Step 3: Selective repair (needs vLLM for re-generation)
+            repaired_file = str(iter_dir / 'repaired.jsonl')
+            repair_episodes(annotated_file, iter_config, output_path=repaired_file)
 
-        # Step 5: Export credit-guided training data
-        export_dir = str(iter_dir / 'training_data')
-        export_credit_guided_training_data(
-            repaired_file, iter_config, export_dir=export_dir,
-            high_credit_threshold=high_credit_threshold,
-        )
+            # Step 4: Build experience graph (CPU-only)
+            graph_dir = str(iter_dir / 'graph')
+            build_experience_graph(repaired_file, iter_config, graph_dir=graph_dir)
 
-        # Step 6: Train
-        train_results = run_training(
-            iter_config, export_dir=export_dir,
-            training_mode=mode, run_dpo=run_dpo, merge_after=True,
-        )
+            # Step 5: Export credit-guided training data (CPU-only)
+            export_dir = str(iter_dir / 'training_data')
+            export_credit_guided_training_data(
+                repaired_file, iter_config, export_dir=export_dir,
+                high_credit_threshold=high_credit_threshold,
+            )
 
-        # Step 7: Swap model for next iteration
-        merged_model = train_results.get('merged_model')
-        if merged_model and Path(merged_model).exists():
-            logger.info('Swapping model to: %s', merged_model)
-            config['backend']['model'] = merged_model
-            config['backend'].pop('model_size', None)
-            config['training']['model_name_or_path'] = merged_model
-            config['training'].pop('model_size', None)
-        else:
-            logger.warning('No merged model found, next iteration uses the same base model')
+            # ----------------------------------------------------------
+            # Phase B: Training (needs GPU, vLLM must be OFF)
+            # ----------------------------------------------------------
+            if server:
+                logger.info('Stopping vLLM server to free GPU for training ...')
+                server.stop()
 
-        # Step 8: Evaluate on eval split
-        eval_config = deepcopy(config)
-        eval_config['task']['dataset_path'] = eval_dataset
-        eval_config['project']['output_dir'] = str(iter_dir)
-        eval_raw = str(iter_dir / 'eval_raw.jsonl')
-        collect_episodes(eval_config, output_path=eval_raw, use_retrieval=False)
-        eval_annotated = str(iter_dir / 'eval_annotated.jsonl')
-        annotate_episodes(eval_raw, eval_config, output_path=eval_annotated)
-        eval_repaired = str(iter_dir / 'eval_repaired.jsonl')
-        repair_episodes(eval_annotated, eval_config, output_path=eval_repaired)
-        eval_metrics = evaluate_episode_file(eval_repaired, str(iter_dir / 'eval'), graph_dir=graph_dir)
+            # Step 6: Train
+            train_results = run_training(
+                iter_config, export_dir=export_dir,
+                training_mode=mode, run_dpo=run_dpo, merge_after=True,
+            )
 
-        iter_result = {
-            'iteration': iteration,
-            'train_results': train_results,
-            'eval_metrics': eval_metrics,
-            'model_path': merged_model or config.get('backend', {}).get('model', ''),
-        }
-        iteration_results.append(iter_result)
-        write_json(str(iter_dir / 'iteration_result.json'), iter_result)
-        logger.info(
-            'Iteration %d complete: eval_accuracy=%.4f',
-            iteration, eval_metrics.get('accuracy', 0),
-        )
+            # Step 7: Swap model path for next iteration
+            merged_model = train_results.get('merged_model')
+            if merged_model and Path(merged_model).exists():
+                logger.info('Model updated: %s', merged_model)
+                config['backend']['model'] = merged_model
+                config['backend'].pop('model_size', None)
+                config['training']['model_name_or_path'] = merged_model
+                config['training'].pop('model_size', None)
+                # Also update serving config so vLLM restarts with new model
+                if 'serving' in config:
+                    config['serving']['model_name_or_path'] = merged_model
+                    config['serving'].pop('model_size', None)
+            else:
+                logger.warning('No merged model found, next iteration uses the same base model')
 
-        # Early stopping: check if accuracy saturated
-        if iteration >= 1:
-            prev_acc = iteration_results[-2]['eval_metrics'].get('accuracy', 0)
-            curr_acc = eval_metrics.get('accuracy', 0)
-            if curr_acc <= prev_acc + 0.005:
-                logger.info('Accuracy saturated (%.4f → %.4f), stopping early', prev_acc, curr_acc)
-                break
+            # ----------------------------------------------------------
+            # Phase C: Evaluation (needs vLLM with the NEW model)
+            # ----------------------------------------------------------
+            if server:
+                new_model = config.get('backend', {}).get('model')
+                logger.info('Restarting vLLM server with updated model: %s', new_model)
+                server.start(model_path=new_model)
+
+            eval_config = deepcopy(config)
+            eval_config['task']['dataset_path'] = eval_dataset
+            eval_config['project']['output_dir'] = str(iter_dir)
+            eval_raw = str(iter_dir / 'eval_raw.jsonl')
+            collect_episodes(eval_config, output_path=eval_raw, use_retrieval=False)
+            eval_annotated = str(iter_dir / 'eval_annotated.jsonl')
+            annotate_episodes(eval_raw, eval_config, output_path=eval_annotated)
+            eval_repaired = str(iter_dir / 'eval_repaired.jsonl')
+            repair_episodes(eval_annotated, eval_config, output_path=eval_repaired)
+            eval_metrics = evaluate_episode_file(eval_repaired, str(iter_dir / 'eval'), graph_dir=graph_dir)
+
+            iter_result = {
+                'iteration': iteration,
+                'train_results': train_results,
+                'eval_metrics': eval_metrics,
+                'model_path': merged_model or config.get('backend', {}).get('model', ''),
+            }
+            iteration_results.append(iter_result)
+            write_json(str(iter_dir / 'iteration_result.json'), iter_result)
+            logger.info(
+                'Iteration %d complete: eval_accuracy=%.4f',
+                iteration, eval_metrics.get('accuracy', 0),
+            )
+
+            # Early stopping: check if accuracy saturated
+            if iteration >= 1:
+                prev_acc = iteration_results[-2]['eval_metrics'].get('accuracy', 0)
+                curr_acc = eval_metrics.get('accuracy', 0)
+                if curr_acc <= prev_acc + 0.005:
+                    logger.info('Accuracy saturated (%.4f → %.4f), stopping early', prev_acc, curr_acc)
+                    break
+
+    finally:
+        # Ensure vLLM is cleaned up even if an error occurs
+        if server and server.is_running:
+            logger.info('Cleaning up vLLM server ...')
+            server.stop()
 
     # Save summary
     summary = {

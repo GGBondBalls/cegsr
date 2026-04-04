@@ -219,9 +219,8 @@ def generate_experiment_scripts(config_path: str | Path, output_dir: str | None 
         launcher_path.write_text(_build_vllm_server_script(script_dir, repo_root, serving), encoding="utf-8")
         scripts["serving"] = _project_relative(launcher_path, repo_root)
 
-    # Iterative training script
+    # Iterative training script (NO healthcheck — the loop manages vLLM itself)
     iterative_lines = _script_header(script_dir, repo_root)
-    iterative_lines.extend(_build_inference_healthcheck_lines(config))
     iterative_lines.append(
         _quote_command([
             "python", "scripts/run_iterative.py",
