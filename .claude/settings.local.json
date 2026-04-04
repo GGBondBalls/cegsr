@@ -1,0 +1,26 @@
+{
+  "permissions": {
+    "allow": [
+      "Bash(curl -s -L \"https://arxiv.org/abs/2502.04780\")",
+      "Bash(curl -s -L \"https://raw.githubusercontent.com/zou-group/sirius/main/README.md\")",
+      "Bash(sed 's/<[^>]*>//g')",
+      "WebFetch(domain:arxiv.org)",
+      "WebSearch",
+      "WebFetch(domain:multiagentllmtraining.com)",
+      "Bash(curl -s \"https://api.github.com/repos/zou-group/sirius/git/trees/main?recursive=1\")",
+      "Bash(python3 -c \"import json,sys; data=json.load\\(sys.stdin\\); [print\\(x['path']\\) for x in data.get\\('tree',[]\\) if x['type']=='blob']\")",
+      "Bash(gh api:*)",
+      "WebFetch(domain:github.com)",
+      "Bash(find:*)",
+      "Bash(grep -E \"\\\\.py$\")",
+      "WebFetch(domain:llamafactory.readthedocs.io)",
+      "Bash(wc:*)",
+      "Bash(python3 -m json.tool)",
+      "Bash(python -m json.tool)",
+      "Bash(python3 -c \"import sys, json; data = json.load\\(sys.stdin\\); print\\(json.dumps\\(data.get\\('credit_records', []\\)[:2], indent=2\\)\\)\")",
+      "Bash(python -c \"import json, sys; data = json.load\\(sys.stdin\\); print\\(json.dumps\\(data, indent=2\\)\\)\")",
+      "Bash(python3)",
+      "WebFetch(domain:raw.githubusercontent.com)"
+    ]
+  }
+}
