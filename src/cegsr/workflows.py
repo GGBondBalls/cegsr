@@ -173,7 +173,11 @@ def collect_episodes(
     use_retrieval: bool = False,
     max_samples: int | None = None,
     verbose_turns: bool = False,
+    resume: bool = True,
 ) -> str:
+    """Collect trajectories.  Saves incrementally so progress survives crashes."""
+    from cegsr.backends.openai_compatible import ServerDownError
+
     system = build_system(config_or_path, use_graph=use_retrieval)
     config = system['config']
     runtime = system['runtime']
@@ -190,15 +194,42 @@ def collect_episodes(
         if enabled_roles:
             extra_context['retrieval_enabled_roles'] = enabled_roles
     output_path = output_path or str(Path(config['project']['output_dir']) / 'raw_episodes.jsonl')
-    episodes = [
-        runtime.run_sample(
-            sample,
-            use_retrieval=use_retrieval,
-            extra_context=extra_context,
-        )
-        for sample in _iter_with_progress(samples, desc='Collect')
-    ]
+
+    # Resume: load already-processed episodes and skip those samples
+    episodes: list[EpisodeTrajectory] = []
+    done_ids: set[str] = set()
+    partial_path = output_path + '.partial'
+    if resume and Path(partial_path).exists():
+        episodes = load_episodes(partial_path)
+        done_ids = {ep.sample.sample_id for ep in episodes}
+        logger.info('Resuming collect: %d/%d already done', len(done_ids), len(samples))
+    remaining = [s for s in samples if s.sample_id not in done_ids]
+
+    for sample in _iter_with_progress(remaining, desc='Collect'):
+        try:
+            ep = runtime.run_sample(
+                sample,
+                use_retrieval=use_retrieval,
+                extra_context=extra_context,
+            )
+        except ServerDownError:
+            # Server died — save what we have and re-raise so the caller
+            # (run_iterative) can restart vLLM and call us again.
+            logger.error('Server down during collect at sample %s, saving %d partial episodes',
+                         sample.sample_id, len(episodes))
+            save_episodes(partial_path, episodes)
+            raise
+
+        episodes.append(ep)
+
+        # Incremental save every 50 samples
+        if len(episodes) % 50 == 0:
+            save_episodes(partial_path, episodes)
+
     save_episodes(output_path, episodes)
+    # Clean up partial file
+    if Path(partial_path).exists():
+        Path(partial_path).unlink()
     return output_path
 
 
@@ -243,7 +274,15 @@ def annotate_episodes(
     return output_path
 
 
-def repair_episodes(episodes_path: str, config_or_path: str | dict[str, Any], output_path: str | None = None) -> str:
+def repair_episodes(
+    episodes_path: str,
+    config_or_path: str | dict[str, Any],
+    output_path: str | None = None,
+    resume: bool = True,
+) -> str:
+    """Selective repair.  Saves incrementally so progress survives crashes."""
+    from cegsr.backends.openai_compatible import ServerDownError
+
     system = build_system(config_or_path, use_graph=False)
     config = system['config']
     runtime = system['runtime']
@@ -257,11 +296,32 @@ def repair_episodes(episodes_path: str, config_or_path: str | dict[str, Any], ou
         failure_margin=config['repair'].get('failure_margin', 0.08),
     )
     episodes = load_episodes(episodes_path)
-    repaired: list[EpisodeTrajectory] = []
-    for episode in _iter_with_progress(episodes, desc='Repair'):
-        repaired.append(repairer.repair(episode, use_retrieval=False))
     output_path = output_path or str(Path(config['project']['output_dir']) / 'repaired_episodes.jsonl')
+
+    # Resume support
+    repaired: list[EpisodeTrajectory] = []
+    done_ids: set[str] = set()
+    partial_path = output_path + '.partial'
+    if resume and Path(partial_path).exists():
+        repaired = load_episodes(partial_path)
+        done_ids = {ep.episode_id for ep in repaired}
+        logger.info('Resuming repair: %d/%d already done', len(done_ids), len(episodes))
+    remaining = [ep for ep in episodes if ep.episode_id not in done_ids]
+
+    for episode in _iter_with_progress(remaining, desc='Repair'):
+        try:
+            repaired.append(repairer.repair(episode, use_retrieval=False))
+        except ServerDownError:
+            logger.error('Server down during repair, saving %d partial episodes', len(repaired))
+            save_episodes(partial_path, repaired)
+            raise
+
+        if len(repaired) % 50 == 0:
+            save_episodes(partial_path, repaired)
+
     save_episodes(output_path, repaired)
+    if Path(partial_path).exists():
+        Path(partial_path).unlink()
     return output_path
 
 
@@ -368,6 +428,44 @@ def run_training(
     return results
 
 
+def _run_with_server(
+    fn,
+    server,
+    model_path: str | None,
+    max_restarts: int = 3,
+    **kwargs,
+):
+    """Call *fn* and auto-restart vLLM if it crashes mid-inference.
+
+    *fn* must accept the same **kwargs and raise ServerDownError when the
+    server is unreachable.  It should support ``resume=True`` so that
+    progress already saved to the .partial file is not lost.
+    """
+    from cegsr.backends.openai_compatible import ServerDownError
+
+    for attempt in range(1, max_restarts + 1):
+        try:
+            return fn(**kwargs)
+        except ServerDownError:
+            if attempt >= max_restarts:
+                raise
+            logger.warning(
+                'Server down during %s (attempt %d/%d), restarting vLLM ...',
+                fn.__name__, attempt, max_restarts,
+            )
+            if server:
+                server.restart(model_path=model_path)
+
+
+def _ensure_server(server, model_path: str | None) -> None:
+    """Start or verify the vLLM server is healthy."""
+    if server is None:
+        return
+    if not server.health_check():
+        logger.info('vLLM not running, starting with model: %s', model_path)
+        server.start(model_path=model_path)
+
+
 def run_iterative(
     config_or_path: str | dict[str, Any],
     output_dir: str | None = None,
@@ -386,8 +484,10 @@ def run_iterative(
         [vLLM OFF] train (SFT + optional DPO) → merge LoRA
         [vLLM ON]  eval (with the new merged model)
 
-    The vLLM server is stopped before training to free GPU memory and
-    restarted afterwards with the newly merged model.
+    vLLM is automatically stopped before training (to free GPU) and
+    restarted afterwards with the merged model.  If vLLM crashes
+    mid-inference, it is restarted and the step resumes from partial
+    progress saved on disk.
 
     Returns per-iteration metrics and final results.
     """
@@ -396,7 +496,6 @@ def run_iterative(
         config['project']['output_dir'] = output_dir
     base_output = Path(config['project']['output_dir'])
 
-    # Resolve train/eval dataset paths
     train_dataset = config.get('task', {}).get('train_dataset_path')
     eval_dataset = config['task']['dataset_path']
     if use_train_split and not train_dataset:
@@ -404,8 +503,6 @@ def run_iterative(
         train_dataset = eval_dataset
 
     mode = training_mode or config.get('training', {}).get('mode', 'qlora')
-
-    # Server manager — handles vLLM start/stop around training
     server = create_server_manager(config)
     iteration_results: list[dict[str, Any]] = []
 
@@ -418,27 +515,34 @@ def run_iterative(
 
             logger.info('========== Iteration %d/%d ==========', iteration, max_iterations - 1)
 
+            current_model = config.get('backend', {}).get('model')
+
             # ----------------------------------------------------------
-            # Phase A: Inference (needs vLLM)
+            # Phase A: Inference (vLLM ON)
             # ----------------------------------------------------------
-            if server and not server.health_check():
-                current_model = config.get('backend', {}).get('model')
-                logger.info('vLLM not running, starting with model: %s', current_model)
-                server.start(model_path=current_model)
+            _ensure_server(server, current_model)
 
             # Step 1: Collect on train split
             if use_train_split and train_dataset:
                 iter_config['task']['dataset_path'] = train_dataset
             raw_file = str(iter_dir / 'raw.jsonl')
-            collect_episodes(iter_config, output_path=raw_file, use_retrieval=False)
+            _run_with_server(
+                collect_episodes, server, current_model,
+                config_or_path=iter_config, output_path=raw_file,
+                use_retrieval=False, resume=True,
+            )
 
-            # Step 2: Credit assignment (CPU-only, no vLLM needed)
+            # Step 2: Credit assignment (CPU-only)
             annotated_file = str(iter_dir / 'annotated.jsonl')
             annotate_episodes(raw_file, iter_config, output_path=annotated_file)
 
-            # Step 3: Selective repair (needs vLLM for re-generation)
+            # Step 3: Selective repair (needs vLLM)
             repaired_file = str(iter_dir / 'repaired.jsonl')
-            repair_episodes(annotated_file, iter_config, output_path=repaired_file)
+            _run_with_server(
+                repair_episodes, server, current_model,
+                episodes_path=annotated_file, config_or_path=iter_config,
+                output_path=repaired_file, resume=True,
+            )
 
             # Step 4: Build experience graph (CPU-only)
             graph_dir = str(iter_dir / 'graph')
@@ -452,19 +556,18 @@ def run_iterative(
             )
 
             # ----------------------------------------------------------
-            # Phase B: Training (needs GPU, vLLM must be OFF)
+            # Phase B: Training (vLLM OFF, GPU for training)
             # ----------------------------------------------------------
             if server:
-                logger.info('Stopping vLLM server to free GPU for training ...')
+                logger.info('Stopping vLLM to free GPU for training ...')
                 server.stop()
 
-            # Step 6: Train
             train_results = run_training(
                 iter_config, export_dir=export_dir,
                 training_mode=mode, run_dpo=run_dpo, merge_after=True,
             )
 
-            # Step 7: Swap model path for next iteration
+            # Step 7: Swap model for next iteration
             merged_model = train_results.get('merged_model')
             if merged_model and Path(merged_model).exists():
                 logger.info('Model updated: %s', merged_model)
@@ -472,7 +575,6 @@ def run_iterative(
                 config['backend'].pop('model_size', None)
                 config['training']['model_name_or_path'] = merged_model
                 config['training'].pop('model_size', None)
-                # Also update serving config so vLLM restarts with new model
                 if 'serving' in config:
                     config['serving']['model_name_or_path'] = merged_model
                     config['serving'].pop('model_size', None)
@@ -480,22 +582,31 @@ def run_iterative(
                 logger.warning('No merged model found, next iteration uses the same base model')
 
             # ----------------------------------------------------------
-            # Phase C: Evaluation (needs vLLM with the NEW model)
+            # Phase C: Evaluation (vLLM ON with new model)
             # ----------------------------------------------------------
+            new_model = config.get('backend', {}).get('model')
             if server:
-                new_model = config.get('backend', {}).get('model')
-                logger.info('Restarting vLLM server with updated model: %s', new_model)
+                logger.info('Restarting vLLM with updated model: %s', new_model)
                 server.start(model_path=new_model)
 
             eval_config = deepcopy(config)
             eval_config['task']['dataset_path'] = eval_dataset
             eval_config['project']['output_dir'] = str(iter_dir)
+
             eval_raw = str(iter_dir / 'eval_raw.jsonl')
-            collect_episodes(eval_config, output_path=eval_raw, use_retrieval=False)
+            _run_with_server(
+                collect_episodes, server, new_model,
+                config_or_path=eval_config, output_path=eval_raw,
+                use_retrieval=False, resume=True,
+            )
             eval_annotated = str(iter_dir / 'eval_annotated.jsonl')
             annotate_episodes(eval_raw, eval_config, output_path=eval_annotated)
             eval_repaired = str(iter_dir / 'eval_repaired.jsonl')
-            repair_episodes(eval_annotated, eval_config, output_path=eval_repaired)
+            _run_with_server(
+                repair_episodes, server, new_model,
+                episodes_path=eval_annotated, config_or_path=eval_config,
+                output_path=eval_repaired, resume=True,
+            )
             eval_metrics = evaluate_episode_file(eval_repaired, str(iter_dir / 'eval'), graph_dir=graph_dir)
 
             iter_result = {
@@ -511,7 +622,6 @@ def run_iterative(
                 iteration, eval_metrics.get('accuracy', 0),
             )
 
-            # Early stopping: check if accuracy saturated
             if iteration >= 1:
                 prev_acc = iteration_results[-2]['eval_metrics'].get('accuracy', 0)
                 curr_acc = eval_metrics.get('accuracy', 0)
@@ -520,12 +630,10 @@ def run_iterative(
                     break
 
     finally:
-        # Ensure vLLM is cleaned up even if an error occurs
         if server and server.is_running:
-            logger.info('Cleaning up vLLM server ...')
+            logger.info('Cleaning up vLLM ...')
             server.stop()
 
-    # Save summary
     summary = {
         'total_iterations': len(iteration_results),
         'iterations': iteration_results,
