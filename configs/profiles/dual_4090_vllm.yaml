@@ -30,7 +30,7 @@ serving:
 training:
   model_name_or_path: /home/fyk/models/Qwen/Qwen2.5-X.XB-Instruct
   model_size: 7B
-  mode: qlora
+  mode: lora
   high_credit_threshold: 0.65
   distributed:
     gpus: [0] # [0,1]

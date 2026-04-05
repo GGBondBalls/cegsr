@@ -14,6 +14,7 @@
 - [4. Phase 3: 七数据集 Paper Benchmark 恢复与全量消融 (2026-04-03)](#4-phase-3-七数据集-paper-benchmark-恢复与全量消融-2026-04-03)
 - [5. 当前总结: 已完成与未完成](#5-当前总结-已完成与未完成)
 - [6. 下一步: 训练闭环实现](#6-下一步-训练闭环实现)
+- [7. Phase 4: 训练闭环代码实现 (2026-04-04 — 2026-04-05)](#7-phase-4-训练闭环代码实现-2026-04-04--2026-04-05)
 
 ---
 
@@ -387,3 +388,248 @@ for iteration in 0..N:
 | CEG-SR (inference) | credit + repair | — | — |
 | CEG-SR (SFT only) | credit + repair | credit-guided | SFT |
 | **CEG-SR (full)** | **credit + repair** | **credit-guided** | **SFT + DPO** |
+
+---
+
+## 7. Phase 4: 训练闭环代码实现 (2026-04-04 — 2026-04-05)
+
+### 7.1 目标
+
+实现从"数据导出就停"到"导出 → 训练 → 模型替换 → 评估 → 迭代"的完整训练闭环，补全 §5.2 中所有 P0 缺失项。
+
+### 7.2 新增/修改文件总览
+
+| 文件 | 操作 | 说明 |
+|------|------|------|
+| `src/cegsr/training/exporters.py` | 修改 | 新增 `export_credit_guided_sft()` |
+| `src/cegsr/training/llamafactory_adapter.py` | 重写 | SFT + DPO + merge 全配置生成 |
+| `src/cegsr/training/runner.py` | **新建** | subprocess 调用 LLaMA-Factory 的执行器 |
+| `src/cegsr/serving.py` | **新建** | vLLM 推理服务生命周期管理 |
+| `src/cegsr/backends/openai_compatible.py` | 修改 | 增加请求重试 + ServerDownError |
+| `src/cegsr/workflows.py` | 扩展 | 新增 `run_training` / `run_iterative` / `_run_with_server` |
+| `src/cegsr/launchers.py` | 扩展 | 自动生成 `run_iterative.sh` |
+| `scripts/run_iterative.py` | **新建** | 迭代训练 CLI 入口 |
+| `configs/training/dpo.yaml` | **新建** | DPO 训练模板 |
+| `configs/training/lora.yaml` | 重写 | Qwen2.5 优化参数 |
+| `configs/training/qlora.yaml` | 重写 | 同上 + 4-bit 量化 |
+| `configs/base.yaml` | 更新 | 训练区块增加 mode/threshold/dpo_template |
+| `configs/profiles/*.yaml` | 更新 | 增加 train_dataset_path |
+
+### 7.3 Credit-Guided 数据导出
+
+**文件:** `src/cegsr/training/exporters.py` — `export_credit_guided_sft()`
+
+原 `export_role_sft()` 导出所有 turn，不区分质量。新增函数按 credit 分数过滤:
+
+| 条件 | 进入训练集 | 标记 |
+|------|-----------|------|
+| 正确 episode + turn credit >= 0.65 | SFT | `source=high_credit` |
+| repair 后 episode 变正确 | SFT | `source=repair_success` |
+| 其余 | 丢弃 | — |
+
+统计信息输出到 `credit_filter_stats.json`，便于检查筛选比例是否合理。
+
+### 7.4 LLaMA-Factory 配置生成
+
+**文件:** `src/cegsr/training/llamafactory_adapter.py` (完全重写)
+
+原版本只生成 per-role SFT 配置，缺少关键参数。新版本:
+
+1. **默认模板全面对齐 Qwen2.5**: `template: qwen`, `lora_target: all`, `bf16: true`, `cosine scheduler`, `warmup_ratio: 0.1`
+2. **新增 combined 配置**: 所有角色数据合并为一个 adapter (避免多 adapter 切换的工程复杂度)
+3. **新增 DPO 配置**: `stage: dpo`, `pref_beta: 0.1`, `adapter_name_or_path` 指向 SFT 产出，实现 SFT → DPO 链式训练
+4. **新增 merge 配置**: `llamafactory-cli export` 将 LoRA adapter 合并回 base model
+5. **生成 `run_merge.sh`**: 用于手动执行 merge
+
+生成的文件结构:
+```
+training_data/
+├── sft_manifest.json
+├── dataset_info.json
+├── {role}_sft.jsonl
+├── preference_pairs.jsonl
+├── reward_data.jsonl
+├── llamafactory_{role}_{lora|qlora}.yaml    # per-role SFT
+├── llamafactory_combined_{lora|qlora}.yaml  # combined SFT
+├── llamafactory_dpo.yaml                    # DPO
+├── llamafactory_merge.yaml                  # merge LoRA → base
+├── run_llamafactory.sh
+├── run_llamafactory_ddp.sh  (if distributed)
+└── run_merge.sh
+```
+
+### 7.5 训练执行器
+
+**文件:** `src/cegsr/training/runner.py` (新建)
+
+通过 `subprocess` 调用 `llamafactory-cli train/export`:
+
+- `run_sft(config_path)` → 执行 SFT 训练
+- `run_dpo(config_path)` → 执行 DPO 训练
+- `merge_lora(config_path)` → 合并 LoRA 到 base model
+- `run_training_pipeline(export_dir, ...)` → 编排: SFT → (可选 DPO) → (可选 merge)
+
+支持分布式训练环境变量注入 (`CUDA_VISIBLE_DEVICES`, `FORCE_TORCHRUN`, `NPROC_PER_NODE` 等)。
+
+### 7.6 vLLM 推理服务生命周期管理
+
+**文件:** `src/cegsr/serving.py` (新建)
+
+**核心问题:** 训练和推理共享 GPU，不能同时运行。迭代循环中需要在推理/训练之间切换 vLLM 服务。
+
+`VLLMServerManager` 提供:
+
+| 方法 | 功能 |
+|------|------|
+| `start(model_path)` | 启动 vLLM (start_new_session=True)，等待健康检查通过 |
+| `stop()` | SIGTERM 整个进程组 → 等待 → SIGKILL → 清理端口残留 → 等待 GPU 释放 |
+| `restart(model_path)` | stop + start，支持切换到新模型 |
+| `health_check()` | GET /v1/models |
+
+**关键设计 — 进程组清理 (解决 TP=2 僵尸进程问题):**
+
+vLLM 启用 tensor parallelism 时会 fork 出 worker 子进程。如果只 kill 主进程，worker 变僵尸，继续占端口和显存。
+
+解决方案:
+1. `Popen(start_new_session=True)` → vLLM 及其 TP worker 在独立进程组
+2. `os.killpg(pgid, SIGTERM)` → 一次杀掉整棵进程树
+3. `_kill_port_holders()` → 扫描端口上的残留进程逐个 SIGKILL
+4. `_ensure_port_free()` → start 前确认端口空闲
+
+**外部启动的 vLLM 也能处理:** 如果 vLLM 是之前手动 `bash launch_inference_server.sh` 启动的 (不是我们的子进程)，`_stop_external()` 通过 `lsof -ti :8000` 找到 PID 并杀掉整个进程树。
+
+### 7.7 后端请求重试与崩溃检测
+
+**文件:** `src/cegsr/backends/openai_compatible.py`
+
+原代码单次请求，timeout 即崩。改进:
+
+| 异常类型 | 处理方式 |
+|---------|---------|
+| `ConnectionError` (服务器不可达) | 立即抛 `ServerDownError`，不重试 |
+| `ReadTimeout` | 指数退避重试 (2s → 4s → 8s)，每次重试前探测 /v1/models |
+| `HTTP 5xx` | 同上，重试 |
+| 重试期间探测到服务器挂了 | 抛 `ServerDownError` |
+
+默认 timeout 从 120s 提升到 180s，默认 max_retries=3。
+
+### 7.8 可恢复 collect/repair + 自动重启
+
+**文件:** `src/cegsr/workflows.py`
+
+**问题:** 2010 样本 collect 跑到第 86 个时 vLLM 挂掉，之前全部丢失。
+
+**可恢复 collect_episodes:**
+- 每处理 50 个样本 → 写 `output_path.partial` 文件
+- 捕获 `ServerDownError` → 保存已处理的 episodes 到 `.partial`，向上抛
+- 下次调用 `resume=True` → 从 `.partial` 加载，跳过已处理样本
+
+**可恢复 repair_episodes:** 同样逻辑。
+
+**`_run_with_server()` 包装器:**
+```python
+def _run_with_server(fn, server, model_path, max_restarts=3, **kwargs):
+    for attempt in range(1, max_restarts + 1):
+        try:
+            return fn(**kwargs)
+        except ServerDownError:
+            if attempt >= max_restarts: raise
+            server.restart(model_path=model_path)
+```
+
+效果: vLLM 挂掉 → 保存进度 → 重启 vLLM → 从断点继续，最多重试 3 次。
+
+### 7.9 迭代循环编排
+
+**文件:** `src/cegsr/workflows.py` — `run_iterative()`
+
+每轮迭代的完整流程:
+
+```
+Phase A [vLLM ON]    collect(train_split) → credit → repair → graph → export
+Phase B [vLLM OFF]   train(SFT + 可选DPO) → merge LoRA
+Phase C [vLLM ON]    eval(eval_split, 用新模型)
+```
+
+关键逻辑:
+- Phase A 前: `_ensure_server()` 确保 vLLM 在运行
+- Phase A 中: `_run_with_server()` 包装 collect/repair，崩溃自动恢复
+- Phase B 前: `server.stop()` 释放 GPU
+- Phase B 后: 更新 `config['backend']['model']` 和 `config['serving']['model_name_or_path']` 为 merged model 路径
+- Phase C 前: `server.start(new_model)` 用新模型重启 vLLM
+- Early stopping: 连续两轮 accuracy 提升 < 0.005 → 停止
+- `finally` 块: 异常时确保清理 vLLM 进程
+
+### 7.10 配置调整
+
+用户在服务器实测后调整为**单卡推理 + 单卡训练** (非 TP=2):
+
+```yaml
+# serving
+gpu_ids: [0]           # 原 [0,1]
+tensor_parallel_size: 1 # 原 2
+
+# training
+distributed.gpus: [0]          # 原 [0,1]
+distributed.nproc_per_node: 1  # 原 2
+
+# training hyperparams
+lora_rank: 16                  # 原 8
+lora_alpha: 32                 # 原 16
+per_device_train_batch_size: 4 # 原 2
+gradient_accumulation_steps: 4 # 原 8
+```
+
+### 7.11 首次迭代运行 (部分完成)
+
+```bash
+python scripts/run_iterative.py \
+    --config configs/profiles/dual_4090_vllm_paper.yaml \
+    --max-iterations 3 --mode lora --credit-threshold 0.65
+```
+
+**运行情况:**
+- 在 collect 阶段处理到第 86/2010 个样本时 vLLM 崩溃 (ReadTimeout 120s)
+- 原因: vLLM TP=2 进程组中 worker 变僵尸，端口/显存未释放
+- 重跑时 `server.start()` 失败: `vLLM exited unexpectedly (code 1)` (端口被占)
+
+**根因:** `stop()` 只杀主进程，TP worker 变僵尸。**已通过 §7.6 的进程组清理修复。**
+
+### 7.12 Phase 4 当前状态
+
+| 模块 | 状态 | 说明 |
+|------|------|------|
+| Credit-guided 数据导出 | ✅ 代码完成 | `export_credit_guided_sft()` |
+| LLaMA-Factory 配置生成 (SFT+DPO+merge) | ✅ 代码完成 | 全参数对齐 Qwen2.5 |
+| 训练执行器 | ✅ 代码完成 | subprocess 调 llamafactory-cli |
+| vLLM 生命周期管理 | ✅ 代码完成 | 进程组清理 + 端口等待 |
+| 后端请求重试 | ✅ 代码完成 | 指数退避 + ServerDownError |
+| 可恢复 collect/repair | ✅ 代码完成 | .partial 文件 + resume |
+| 迭代循环编排 | ✅ 代码完成 | _run_with_server 自动重启 |
+| **服务器端 LLaMA-Factory 安装** | ⬜ 待验证 | 需 `pip install llamafactory[torch,metrics]` |
+| **首次完整迭代运行** | ⬜ 待运行 | 代码已同步，等待重跑 |
+| **训练后评估结果** | ⬜ 待获取 | 依赖首次迭代完成 |
+
+### 7.13 服务器部署步骤
+
+```bash
+# 1. 安装 LLaMA-Factory
+pip install llamafactory[torch,metrics]
+pip install bitsandbytes   # QLoRA 需要
+llamafactory-cli version   # 验证
+
+# 2. 同步代码到服务器
+
+# 3. 准备数据 (如已准备可跳过)
+python scripts/prepare_data.py --config configs/datasets/paper_reasoning_train.yaml
+python scripts/prepare_data.py --config configs/datasets/paper_reasoning_eval.yaml
+
+# 4. 运行迭代训练 (vLLM 由代码自动管理，无需手动启动)
+python scripts/run_iterative.py \
+    --config configs/profiles/dual_4090_vllm_paper.yaml \
+    --max-iterations 3 \
+    --mode lora \
+    --credit-threshold 0.65
+```
+
+注意: **不再需要手动启动/停止 vLLM**。`run_iterative` 会自动管理推理服务的生命周期。
