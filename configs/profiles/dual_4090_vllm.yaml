@@ -23,9 +23,11 @@ serving:
   port: 8000
   api_key: EMPTY
   dtype: auto
-  gpu_memory_utilization: 0.92
-  max_model_len: 4096
-  max_num_seqs: 16
+  gpu_memory_utilization: 0.50
+  max_model_len: 2048
+  max_num_seqs: 4
+  extra_args: ["--enforce-eager"]
+  max_restarts: 8
 
 training:
   model_name_or_path: /home/fyk/models/Qwen/Qwen2.5-X.XB-Instruct

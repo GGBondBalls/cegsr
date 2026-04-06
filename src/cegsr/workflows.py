@@ -506,6 +506,8 @@ def run_iterative(
     server = create_server_manager(config)
     iteration_results: list[dict[str, Any]] = []
 
+    max_restarts = int(config.get('serving', {}).get('max_restarts', 5))
+
     try:
         for iteration in range(max_iterations):
             iter_dir = base_output / f'iteration_{iteration}'
@@ -528,6 +530,7 @@ def run_iterative(
             raw_file = str(iter_dir / 'raw.jsonl')
             _run_with_server(
                 collect_episodes, server, current_model,
+                max_restarts=max_restarts,
                 config_or_path=iter_config, output_path=raw_file,
                 use_retrieval=False, resume=True,
             )
@@ -540,6 +543,7 @@ def run_iterative(
             repaired_file = str(iter_dir / 'repaired.jsonl')
             _run_with_server(
                 repair_episodes, server, current_model,
+                max_restarts=max_restarts,
                 episodes_path=annotated_file, config_or_path=iter_config,
                 output_path=repaired_file, resume=True,
             )
@@ -596,6 +600,7 @@ def run_iterative(
             eval_raw = str(iter_dir / 'eval_raw.jsonl')
             _run_with_server(
                 collect_episodes, server, new_model,
+                max_restarts=max_restarts,
                 config_or_path=eval_config, output_path=eval_raw,
                 use_retrieval=False, resume=True,
             )
@@ -604,6 +609,7 @@ def run_iterative(
             eval_repaired = str(iter_dir / 'eval_repaired.jsonl')
             _run_with_server(
                 repair_episodes, server, new_model,
+                max_restarts=max_restarts,
                 episodes_path=eval_annotated, config_or_path=eval_config,
                 output_path=eval_repaired, resume=True,
             )
