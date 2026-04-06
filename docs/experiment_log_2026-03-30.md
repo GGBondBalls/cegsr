@@ -2,7 +2,7 @@
 
 > 本文档是 CEG-SR 项目从启动至今的完整实验日志。面向第一次阅读本项目的研究者，记录所有有效的实验操作、代码改进、关键结果与判断。
 >
-> 最后整理: 2026-04-04
+> 最后整理: 2026-04-06
 
 ---
 
@@ -633,3 +633,91 @@ python scripts/run_iterative.py \
 ```
 
 注意: **不再需要手动启动/停止 vLLM**。`run_iterative` 会自动管理推理服务的生命周期。
+
+### 7.14 修复 vLLM 推理中途 OOM 崩溃 (2026-04-06)
+
+**问题:** §7.11 中 collect 阶段跑到第 86 个样本时 vLLM 崩溃，根因是 TP=2 僵尸进程 (已在 §7.6 修复进程组清理)。但即便进程组清理生效，vLLM 仍然频繁因显存不足 (OOM) 而中途挂掉。原配置 `gpu_memory_utilization: 0.92` + `max_model_len: 4096` + `max_num_seqs: 16` 在双 4090 (各 24GB) 上过于激进，CUDA graph 的额外显存开销进一步加剧问题。
+
+**修复 (commit `5f5ebae`):**
+
+**文件 1:** `configs/profiles/dual_4090_vllm.yaml` — 大幅降低 vLLM 资源占用
+
+| 参数 | 修改前 | 修改后 | 原因 |
+|------|--------|--------|------|
+| `gpu_memory_utilization` | 0.92 | **0.50** | 预留显存余量，避免推理峰值 OOM |
+| `max_model_len` | 4096 | **2048** | 减少 KV cache 占用 |
+| `max_num_seqs` | 16 | **4** | 降低并发 batch，减少显存峰值 |
+| `extra_args` | (无) | **`["--enforce-eager"]`** | 禁用 CUDA graph，消除其额外显存开销 |
+| `max_restarts` | (无) | **8** | 提高容错上限，允许更多次崩溃恢复 |
+
+**文件 2:** `src/cegsr/workflows.py` — `run_iterative()` 读取并传递 `max_restarts`
+
+- 从配置 `serving.max_restarts` 读取最大重启次数 (默认 5)
+- 将 `max_restarts` 传递给 4 处 `_run_with_server()` 调用:
+  - train split: `collect_episodes` + `repair_episodes`
+  - eval split: `collect_episodes` + `repair_episodes`
+
+**效果:** 配合 §7.8 的可恢复 collect/repair 机制，即使 vLLM 因偶发 OOM 崩溃，也能自动重启并从断点继续，最多容忍 8 次崩溃。降低资源占用后预期崩溃频率也会大幅减少。
+
+**待验证:** 需在服务器上重跑 `run_iterative.py`，确认 collect 2010 样本能否跑完。
+
+### 7.15 修复 vLLM 推理中途挂掉的问题2: 升级 48GB vGPU + 主动重启机制 (2026-04-06)
+
+**问题:** §7.14 的配置优化后重跑，vLLM 仍然每处理 ~90 个样本就 OOM 崩溃。8 次 `max_restarts` 用完后程序终止，仅完成 1008/1757 样本 (57%)。
+
+**根因分析:** 32GB 虚拟显存服务器上显存余量不足:
+- `gpu_memory_utilization: 0.50` → 分配 16GB
+- Qwen2.5-7B bf16 模型权重 ~14GB
+- **仅剩 ~2GB 给 KV cache**，90 个样本后显存碎片积累到 OOM
+
+**两方面修复:**
+
+#### A. 硬件升级: 32GB → 48GB vGPU
+
+| | 32GB (旧) | 48GB (新) |
+|---|---|---|
+| vLLM 分配 | 16GB (×0.50) | **33.6GB (×0.70)** |
+| 模型权重 | ~14GB | ~14GB |
+| **KV cache 余量** | **~2GB** | **~19.6GB** |
+
+48GB 的 KV cache 余量是 32GB 的 ~10 倍，可以启用 CUDA graph 加速、更大并发、完整上下文长度。
+
+#### B. 代码: 主动重启 (Proactive Restart) 作为保险机制
+
+即使显存充足，长时间运行仍可能出现偶发问题。新增主动重启机制: 在 vLLM 还健康时周期性保存进度并重启，而非等 OOM 崩溃。
+
+**修改 1: `src/cegsr/workflows.py`**
+
+- `collect_episodes()` 和 `repair_episodes()` 新增 `restart_interval` 参数
+- 每处理 N 个新样本后，保存 `.partial` 文件，抛出 `ServerDownError` 触发重启
+- `_run_with_server()` 捕获异常 → 重启 vLLM → 从断点恢复
+- `run_iterative()` 动态计算 `max_restarts`:
+  ```
+  max_restarts = 4 × ceil(max(n_train, n_eval) / restart_interval) + 10
+  ```
+- `make_backend()` 从配置读取 `timeout` (默认 120s)
+
+**修改 2: `configs/profiles/dual_4090_vllm.yaml` — 适配 48GB vGPU**
+
+| 参数 | 32GB 配置 | 48GB 配置 | 原因 |
+|------|----------|----------|------|
+| `gpu_memory_utilization` | 0.50 | **0.70** | 48GB × 0.70 = 33.6GB，KV cache ~19.6GB |
+| `max_model_len` | 2048 | **4096** | 恢复完整上下文长度 |
+| `max_num_seqs` | 4 | **8** | 提升并发吞吐 |
+| `extra_args` | `["--enforce-eager"]` | **(移除)** | 启用 CUDA graph 加速推理 |
+| `max_restarts` | 8 | **50** | 覆盖主动重启 + 崩溃缓冲 |
+| `restart_every_n` | (无) | **300** | 48GB 下 300 样本才主动重启，开销极小 |
+
+**修改 3: `src/cegsr/backends/openai_compatible.py`**
+
+- 默认 timeout 从 180s 降为 **120s** (7B 单请求最多几秒，120s 足够，更快检测崩溃)
+
+**修改 4: `src/cegsr/serving.py`**
+
+- `_wait_gpu_release()` 等待时间从 15s 降为 **10s** (减少每次重启开销)
+
+**预期效果:**
+
+48GB + CUDA graph + `max_num_seqs=8` 预期 collect 阶段速度提升 2-3x。主动重启每 300 样本触发一次 (1757 样本 → ~6 次重启，总开销 ~10 分钟)，仅作为保险。
+
+**待验证:** 需在 48GB vGPU 服务器上重跑 `run_iterative.py`。

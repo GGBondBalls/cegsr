@@ -25,7 +25,7 @@ class OpenAICompatibleBackend(BaseBackend):
         model: str,
         base_url: str,
         api_key: str = "EMPTY",
-        timeout: int = 180,
+        timeout: int = 120,
         max_retries: int = 3,
         extra_body: dict[str, Any] | None = None,
     ) -> None:

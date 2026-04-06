@@ -115,6 +115,7 @@ def make_backend(cfg: dict[str, Any]):
             model=model,
             base_url=cfg['base_url'],
             api_key=cfg.get('api_key', 'EMPTY'),
+            timeout=int(cfg.get('timeout', 120)),
             extra_body=cfg.get('extra_body', {}),
         )
     if kind == 'sglang':
@@ -126,6 +127,7 @@ def make_backend(cfg: dict[str, Any]):
             model=model,
             base_url=cfg['base_url'],
             api_key=cfg.get('api_key', 'EMPTY'),
+            timeout=int(cfg.get('timeout', 120)),
             extra_body=cfg.get('extra_body', {}),
         )
     raise ValueError(f'Unsupported backend kind: {kind}')
@@ -174,6 +176,7 @@ def collect_episodes(
     max_samples: int | None = None,
     verbose_turns: bool = False,
     resume: bool = True,
+    restart_interval: int | None = None,
 ) -> str:
     """Collect trajectories.  Saves incrementally so progress survives crashes."""
     from cegsr.backends.openai_compatible import ServerDownError
@@ -205,6 +208,7 @@ def collect_episodes(
         logger.info('Resuming collect: %d/%d already done', len(done_ids), len(samples))
     remaining = [s for s in samples if s.sample_id not in done_ids]
 
+    new_count = 0
     for sample in _iter_with_progress(remaining, desc='Collect'):
         try:
             ep = runtime.run_sample(
@@ -221,10 +225,18 @@ def collect_episodes(
             raise
 
         episodes.append(ep)
+        new_count += 1
 
         # Incremental save every 50 samples
         if len(episodes) % 50 == 0:
             save_episodes(partial_path, episodes)
+
+        # Proactive restart to prevent vLLM memory accumulation (OOM)
+        if restart_interval and new_count >= restart_interval and new_count < len(remaining):
+            logger.info('Proactive restart after %d new samples (%d/%d total done)',
+                        new_count, len(episodes), len(samples))
+            save_episodes(partial_path, episodes)
+            raise ServerDownError(f"Proactive restart after {new_count} samples")
 
     save_episodes(output_path, episodes)
     # Clean up partial file
@@ -279,6 +291,7 @@ def repair_episodes(
     config_or_path: str | dict[str, Any],
     output_path: str | None = None,
     resume: bool = True,
+    restart_interval: int | None = None,
 ) -> str:
     """Selective repair.  Saves incrementally so progress survives crashes."""
     from cegsr.backends.openai_compatible import ServerDownError
@@ -308,6 +321,7 @@ def repair_episodes(
         logger.info('Resuming repair: %d/%d already done', len(done_ids), len(episodes))
     remaining = [ep for ep in episodes if ep.episode_id not in done_ids]
 
+    new_count = 0
     for episode in _iter_with_progress(remaining, desc='Repair'):
         try:
             repaired.append(repairer.repair(episode, use_retrieval=False))
@@ -316,8 +330,17 @@ def repair_episodes(
             save_episodes(partial_path, repaired)
             raise
 
+        new_count += 1
+
         if len(repaired) % 50 == 0:
             save_episodes(partial_path, repaired)
+
+        # Proactive restart to prevent vLLM memory accumulation (OOM)
+        if restart_interval and new_count >= restart_interval and new_count < len(remaining):
+            logger.info('Proactive restart after %d repaired episodes (%d/%d total done)',
+                        new_count, len(repaired), len(episodes))
+            save_episodes(partial_path, repaired)
+            raise ServerDownError(f"Proactive restart after {new_count} repairs")
 
     save_episodes(output_path, repaired)
     if Path(partial_path).exists():
@@ -506,7 +529,27 @@ def run_iterative(
     server = create_server_manager(config)
     iteration_results: list[dict[str, Any]] = []
 
-    max_restarts = int(config.get('serving', {}).get('max_restarts', 5))
+    max_restarts_cfg = int(config.get('serving', {}).get('max_restarts', 5))
+    restart_interval = int(config.get('serving', {}).get('restart_every_n', 0)) or None
+
+    # With proactive restarts, we need enough restart budget for all batches
+    # plus a buffer for unexpected crashes.
+    if restart_interval:
+        n_train = len(load_samples(
+            train_dataset or eval_dataset,
+            prepare_config=config['task'].get('prepare_config'),
+        ))
+        n_eval = len(load_samples(
+            eval_dataset,
+            prepare_config=config['task'].get('prepare_config'),
+        ))
+        # (collect + repair) for both train and eval splits, per iteration
+        proactive_per_iter = 4 * max(1, (max(n_train, n_eval) // restart_interval))
+        max_restarts = proactive_per_iter + 10  # +10 buffer for real crashes
+        logger.info('Proactive restart every %d samples, max_restarts=%d per phase',
+                    restart_interval, max_restarts)
+    else:
+        max_restarts = max_restarts_cfg
 
     try:
         for iteration in range(max_iterations):
@@ -533,6 +576,7 @@ def run_iterative(
                 max_restarts=max_restarts,
                 config_or_path=iter_config, output_path=raw_file,
                 use_retrieval=False, resume=True,
+                restart_interval=restart_interval,
             )
 
             # Step 2: Credit assignment (CPU-only)
@@ -546,6 +590,7 @@ def run_iterative(
                 max_restarts=max_restarts,
                 episodes_path=annotated_file, config_or_path=iter_config,
                 output_path=repaired_file, resume=True,
+                restart_interval=restart_interval,
             )
 
             # Step 4: Build experience graph (CPU-only)
@@ -603,6 +648,7 @@ def run_iterative(
                 max_restarts=max_restarts,
                 config_or_path=eval_config, output_path=eval_raw,
                 use_retrieval=False, resume=True,
+                restart_interval=restart_interval,
             )
             eval_annotated = str(iter_dir / 'eval_annotated.jsonl')
             annotate_episodes(eval_raw, eval_config, output_path=eval_annotated)
@@ -612,6 +658,7 @@ def run_iterative(
                 max_restarts=max_restarts,
                 episodes_path=eval_annotated, config_or_path=eval_config,
                 output_path=eval_repaired, resume=True,
+                restart_interval=restart_interval,
             )
             eval_metrics = evaluate_episode_file(eval_repaired, str(iter_dir / 'eval'), graph_dir=graph_dir)
 

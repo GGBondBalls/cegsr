@@ -22,7 +22,14 @@
       "Bash(python3)",
       "WebFetch(domain:raw.githubusercontent.com)",
       "Bash(python -c \"import ast; [ast.parse\\(open\\(f, encoding='utf-8'\\).read\\(\\)\\) for f in ['src/cegsr/training/exporters.py', 'src/cegsr/training/llamafactory_adapter.py', 'src/cegsr/training/runner.py', 'src/cegsr/workflows.py', 'scripts/run_iterative.py']] ; print\\('All files parse OK'\\)\")",
-      "Bash(python -c ':*)"
+      "Bash(python -c ':*)",
+      "Bash(python -c \"import ast; ast.parse\\(open\\('src/cegsr/workflows.py'\\).read\\(\\)\\); print\\('workflows.py OK'\\)\")",
+      "Bash(python -c \"import ast; ast.parse\\(open\\('src/cegsr/backends/openai_compatible.py'\\).read\\(\\)\\); print\\('openai_compatible.py OK'\\)\")",
+      "Bash(python -c \"import ast; ast.parse\\(open\\('src/cegsr/serving.py'\\).read\\(\\)\\); print\\('serving.py OK'\\)\")",
+      "Bash(python -c \"import ast; ast.parse\\(open\\('src/cegsr/workflows.py', encoding='utf-8'\\).read\\(\\)\\); print\\('workflows.py OK'\\)\")",
+      "Bash(python -c \"import ast; ast.parse\\(open\\('src/cegsr/backends/openai_compatible.py', encoding='utf-8'\\).read\\(\\)\\); print\\('openai_compatible.py OK'\\)\")",
+      "Bash(python -c \"import ast; ast.parse\\(open\\('src/cegsr/serving.py', encoding='utf-8'\\).read\\(\\)\\); print\\('serving.py OK'\\)\")",
+      "Bash(python:*)"
     ]
   }
 }

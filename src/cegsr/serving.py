@@ -285,7 +285,7 @@ class VLLMServerManager:
             time.sleep(2)
 
     @staticmethod
-    def _wait_gpu_release(max_wait: float = 15) -> None:
+    def _wait_gpu_release(max_wait: float = 10) -> None:
         """Pause to let CUDA release GPU memory after process exit."""
         logger.info("Waiting %.0fs for GPU memory release ...", max_wait)
         time.sleep(max_wait)
