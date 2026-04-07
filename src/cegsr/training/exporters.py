@@ -4,7 +4,7 @@ from collections import defaultdict
 from pathlib import Path
 from typing import Any
 
-from cegsr.trajectories.schema import EpisodeTrajectory
+from cegsr.trajectories.schema import AgentTurn, EpisodeTrajectory
 from cegsr.utils.io import ensure_dir, write_json, write_jsonl
 
 
@@ -34,6 +34,60 @@ def export_role_sft(episodes: list[EpisodeTrajectory], output_dir: str | Path) -
         manifest[role] = str(path)
     write_json(output_dir / "sft_manifest.json", manifest)
     return manifest
+
+
+def export_credit_guided_sft(
+    filtered_turns: list[tuple[EpisodeTrajectory, AgentTurn]],
+    output_dir: str | Path,
+) -> dict[str, str]:
+    """Export credit-filtered role-specific SFT data.
+
+    Unlike export_role_sft which exports ALL turns, this only exports
+    turns that passed credit-guided filtering.
+    """
+    output_dir = ensure_dir(output_dir)
+    by_role: dict[str, list[dict[str, Any]]] = defaultdict(list)
+    for episode, turn in filtered_turns:
+        record = {
+            "messages": turn.prompt_messages + [{"role": "assistant", "content": turn.response}],
+            "meta": {
+                "sample_id": episode.sample.sample_id,
+                "episode_id": episode.episode_id,
+                "role": turn.role,
+                "task_type": episode.sample.task_type,
+                "credit_guided": True,
+            },
+        }
+        by_role[turn.role].append(record)
+    manifest: dict[str, str] = {}
+    for role, rows in by_role.items():
+        path = output_dir / f"{role}_sft.jsonl"
+        write_jsonl(path, rows)
+        manifest[role] = str(path)
+    write_json(output_dir / "sft_manifest.json", manifest)
+    return manifest
+
+
+def export_credit_guided_preference(
+    preference_pairs: list[dict[str, Any]],
+    output_dir: str | Path,
+) -> str:
+    """Export credit-guided preference pairs for DPO training."""
+    output_dir = ensure_dir(output_dir)
+    rows: list[dict[str, Any]] = []
+    for pair in preference_pairs:
+        rows.append({
+            "messages": pair["prompt_messages"],
+            "chosen": {"role": "assistant", "content": pair["chosen"]},
+            "rejected": {"role": "assistant", "content": pair["rejected"]},
+            "meta": {
+                "episode_id": pair.get("episode_id"),
+                "repair_id": pair.get("repair_id"),
+            },
+        })
+    path = output_dir / "preference_pairs.jsonl"
+    write_jsonl(path, rows)
+    return str(path)
 
 
 def export_preference_pairs(episodes: list[EpisodeTrajectory], output_dir: str | Path) -> str:

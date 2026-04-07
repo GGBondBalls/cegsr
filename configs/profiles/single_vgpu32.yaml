@@ -1,0 +1,85 @@
+# Profile: Single vGPU-32GB server with transformers local inference
+# Server: 25 cores, 90GB RAM, 1x NVIDIA vGPU-32GB
+# Model: Qwen2.5-7B-Instruct
+# Inference: transformers (hf_local) — no vLLM dependency
+# Training: QLoRA via LLaMA-Factory
+
+_base_: ../base.yaml
+
+project:
+  output_dir: outputs/iterative_train
+
+backend:
+  kind: hf_local
+  model_name_or_path: /home/fyk/models/Qwen/Qwen2.5-X.XB-Instruct
+  model_size: 7B
+  device: auto
+  trust_remote_code: true
+  use_chat_template: true
+  load_kwargs:
+    torch_dtype: auto
+
+task:
+  dataset_path: outputs/data/paper_reasoning_eval.jsonl
+  prepare_config: configs/datasets/paper_reasoning_eval.yaml
+
+experience:
+  graph_dir: outputs/iterative_train/graph
+
+training:
+  model_name_or_path: /home/fyk/models/Qwen/Qwen2.5-X.XB-Instruct
+  model_size: 7B
+
+  credit_filter:
+    high_threshold: 0.65
+    low_threshold: 0.35
+    include_repaired: true
+    min_samples_per_role: 10
+
+  iterative:
+    max_iterations: 3
+    training_mode: qlora
+    dpo_enabled: false
+    early_stop_patience: 2
+    train_dataset_path: outputs/data/paper_reasoning_train.jsonl
+    train_dataset_config: configs/datasets/paper_reasoning_train.yaml
+    eval_dataset_path: outputs/data/paper_reasoning_eval.jsonl
+
+  qlora_template:
+    stage: sft
+    do_train: true
+    finetuning_type: lora
+    quantization_bit: 4
+    lora_rank: 16
+    lora_alpha: 32
+    lora_target: all
+    template: qwen
+    per_device_train_batch_size: 2
+    gradient_accumulation_steps: 8
+    learning_rate: 0.0002
+    num_train_epochs: 2.0
+    cutoff_len: 2048
+    warmup_ratio: 0.1
+    lr_scheduler_type: cosine
+    logging_steps: 10
+    save_strategy: epoch
+    bf16: true
+
+  lora_template:
+    stage: sft
+    do_train: true
+    finetuning_type: lora
+    lora_rank: 16
+    lora_alpha: 32
+    lora_target: all
+    template: qwen
+    per_device_train_batch_size: 1
+    gradient_accumulation_steps: 16
+    learning_rate: 0.0002
+    num_train_epochs: 2.0
+    cutoff_len: 2048
+    warmup_ratio: 0.1
+    lr_scheduler_type: cosine
+    logging_steps: 10
+    save_strategy: epoch
+    bf16: true

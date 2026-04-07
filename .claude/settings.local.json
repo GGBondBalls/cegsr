@@ -20,7 +20,10 @@
       "Bash(python3 -c \"import sys, json; data = json.load\\(sys.stdin\\); print\\(json.dumps\\(data.get\\('credit_records', []\\)[:2], indent=2\\)\\)\")",
       "Bash(python -c \"import json, sys; data = json.load\\(sys.stdin\\); print\\(json.dumps\\(data, indent=2\\)\\)\")",
       "Bash(python3)",
-      "WebFetch(domain:raw.githubusercontent.com)"
+      "WebFetch(domain:raw.githubusercontent.com)",
+      "Bash(pip show:*)",
+      "Bash(python:*)",
+      "Bash(PYTHONPATH=src python:*)"
     ]
   }
 }

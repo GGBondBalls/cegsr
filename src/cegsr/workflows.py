@@ -26,8 +26,16 @@ from cegsr.tasks.pubmedqa_style import PubMedQAStyleTask
 from cegsr.tasks.qa import QATask
 from cegsr.trajectories.schema import CreditRecord, EpisodeTrajectory, TaskSample
 from cegsr.trajectories.segmentation import segment_episode
-from cegsr.training.exporters import export_preference_pairs, export_reward_data, export_role_sft
-from cegsr.training.llamafactory_adapter import generate_llamafactory_project
+from cegsr.training.credit_filter import CreditFilterConfig, filter_by_credit
+from cegsr.training.exporters import (
+    export_credit_guided_preference,
+    export_credit_guided_sft,
+    export_preference_pairs,
+    export_reward_data,
+    export_role_sft,
+)
+from cegsr.training.llamafactory_adapter import build_dataset_info, generate_llamafactory_project
+from cegsr.training.trainer import train_dpo, train_role_sft
 from cegsr.utils.io import ensure_dir, read_jsonl, write_csv, write_json, write_jsonl
 from cegsr.utils.logging import get_logger
 from cegsr.utils.modeling import resolve_local_model_path
@@ -90,7 +98,7 @@ def make_task(task_type: str):
     raise ValueError(f'Unsupported task_type: {task_type}')
 
 
-def make_backend(cfg: dict[str, Any]):
+def make_backend(cfg: dict[str, Any], adapter_paths: dict[str, str] | None = None):
     kind = cfg.get('kind', 'mock')
     if kind == 'mock':
         return MockBackend()
@@ -102,6 +110,7 @@ def make_backend(cfg: dict[str, Any]):
             load_kwargs=cfg.get('load_kwargs', {}),
             use_chat_template=cfg.get('use_chat_template', True),
             model_size=cfg.get('model_size'),
+            adapter_paths=adapter_paths,
         )
     if kind == 'vllm':
         model = resolve_local_model_path(
@@ -128,10 +137,10 @@ def make_backend(cfg: dict[str, Any]):
     raise ValueError(f'Unsupported backend kind: {kind}')
 
 
-def build_system(config_or_path: str | dict[str, Any], use_graph: bool | None = None):
+def build_system(config_or_path: str | dict[str, Any], use_graph: bool | None = None, adapter_paths: dict[str, str] | None = None):
     config = load_config(config_or_path) if isinstance(config_or_path, (str, Path)) else config_or_path
     task = make_task(config['task']['task_type'])
-    backend = make_backend(config['backend'])
+    backend = make_backend(config['backend'], adapter_paths=adapter_paths)
     agents = build_agents(config['agents'], backend)
     retriever = None
     if use_graph is None:
@@ -170,8 +179,9 @@ def collect_episodes(
     use_retrieval: bool = False,
     max_samples: int | None = None,
     verbose_turns: bool = False,
+    adapter_paths: dict[str, str] | None = None,
 ) -> str:
-    system = build_system(config_or_path, use_graph=use_retrieval)
+    system = build_system(config_or_path, use_graph=use_retrieval, adapter_paths=adapter_paths)
     config = system['config']
     runtime = system['runtime']
     dataset_path = config['task']['dataset_path']
@@ -240,8 +250,8 @@ def annotate_episodes(
     return output_path
 
 
-def repair_episodes(episodes_path: str, config_or_path: str | dict[str, Any], output_path: str | None = None) -> str:
-    system = build_system(config_or_path, use_graph=False)
+def repair_episodes(episodes_path: str, config_or_path: str | dict[str, Any], output_path: str | None = None, adapter_paths: dict[str, str] | None = None) -> str:
+    system = build_system(config_or_path, use_graph=False, adapter_paths=adapter_paths)
     config = system['config']
     runtime = system['runtime']
     repairer = SelectiveRepairEngine(
@@ -450,3 +460,261 @@ def run_ablation_suite(config_or_path: str | dict[str, Any], output_dir: str | N
         )
     (Path(output_dir) / 'ablation_table.md').write_text('\n'.join(md) + '\n', encoding='utf-8')
     return results
+
+
+# ─── Training Loop & Iterative Self-Improvement ───────────────────────
+
+
+def export_credit_guided_training_data(
+    episodes_path: str,
+    config: dict[str, Any],
+    export_dir: str,
+) -> dict[str, Any]:
+    """Export credit-filtered training data for LLaMA-Factory.
+
+    Returns dict with paths and filter statistics.
+    """
+    episodes = load_episodes(episodes_path)
+    export_path = ensure_dir(export_dir)
+
+    filter_cfg = config.get('training', {}).get('credit_filter', {})
+    credit_cfg = CreditFilterConfig(
+        high_threshold=filter_cfg.get('high_threshold', 0.65),
+        low_threshold=filter_cfg.get('low_threshold', 0.35),
+        include_repaired=filter_cfg.get('include_repaired', True),
+        min_samples_per_role=filter_cfg.get('min_samples_per_role', 10),
+    )
+
+    filtered = filter_by_credit(episodes, credit_cfg)
+    logger.info(
+        'Credit filter: %d/%d turns selected (%.1f%%), %d preference pairs',
+        filtered.stats['sft_selected'],
+        filtered.stats['total_turns'],
+        filtered.stats['selection_rate'] * 100,
+        filtered.stats['preference_pairs'],
+    )
+
+    manifest = export_credit_guided_sft(filtered.sft_turns, export_dir)
+    pref_path = None
+    if filtered.preference_pairs:
+        pref_path = export_credit_guided_preference(filtered.preference_pairs, export_dir)
+
+    # Generate dataset_info.json for LLaMA-Factory
+    dataset_info = build_dataset_info(manifest, preference_path=pref_path)
+    write_json(export_path / 'dataset_info.json', dataset_info)
+
+    write_json(export_path / 'filter_stats.json', filtered.stats)
+
+    return {
+        'manifest': manifest,
+        'preference_path': pref_path,
+        'stats': filtered.stats,
+        'export_dir': str(export_path),
+    }
+
+
+def _free_gpu_memory() -> None:
+    """Force garbage collection and release GPU memory."""
+    import gc
+    gc.collect()
+    try:
+        import torch
+        if torch.cuda.is_available():
+            torch.cuda.empty_cache()
+            torch.cuda.synchronize()
+    except ImportError:
+        pass
+
+
+def run_iterative_loop(
+    config_or_path: str | dict[str, Any],
+    output_dir: str | None = None,
+    max_iterations: int | None = None,
+    training_mode: str | None = None,
+    dpo_enabled: bool | None = None,
+    early_stop_patience: int = 2,
+) -> dict[str, Any]:
+    """Run the full iterative self-improvement loop.
+
+    Each iteration:
+      1. Collect train-split trajectories (with current model)
+      2. Credit assignment
+      3. Selective repair
+      4. Export credit-guided training data
+      5. Train via LLaMA-Factory (SFT + optional DPO)
+      6. Evaluate on eval-split with fine-tuned model
+
+    Args:
+        config_or_path: Config file path or dict.
+        output_dir: Override output directory.
+        max_iterations: Number of iterations (default from config).
+        training_mode: 'lora' or 'qlora' (default from config).
+        dpo_enabled: Whether to run DPO after SFT.
+        early_stop_patience: Stop if no improvement for N iterations.
+
+    Returns:
+        Summary dict with per-iteration metrics and paths.
+    """
+    config = load_config(config_or_path) if isinstance(config_or_path, (str, Path)) else deepcopy(config_or_path)
+    if output_dir:
+        config['project']['output_dir'] = output_dir
+
+    iter_cfg = config.get('training', {}).get('iterative', {})
+    max_iter = max_iterations or iter_cfg.get('max_iterations', 3)
+    mode = training_mode or iter_cfg.get('training_mode', 'qlora')
+    do_dpo = dpo_enabled if dpo_enabled is not None else iter_cfg.get('dpo_enabled', False)
+    train_dataset_path = iter_cfg.get('train_dataset_path', config['task']['dataset_path'])
+    train_prepare_config = iter_cfg.get('train_dataset_config')
+    eval_dataset_path = iter_cfg.get('eval_dataset_path', config['task']['dataset_path'])
+
+    base_dir = Path(config['project']['output_dir'])
+    ensure_dir(base_dir)
+
+    iteration_results: list[dict[str, Any]] = []
+    best_accuracy = 0.0
+    no_improve_count = 0
+    current_adapters: dict[str, str] | None = None
+
+    logger.info('='*60)
+    logger.info('Starting iterative self-improvement loop')
+    logger.info('  max_iterations: %d', max_iter)
+    logger.info('  training_mode: %s', mode)
+    logger.info('  dpo_enabled: %s', do_dpo)
+    logger.info('  train_dataset: %s', train_dataset_path)
+    logger.info('  eval_dataset: %s', eval_dataset_path)
+    logger.info('='*60)
+
+    for iteration in range(max_iter):
+        iter_dir = ensure_dir(base_dir / f'iter_{iteration}')
+        logger.info('')
+        logger.info('━'*60)
+        logger.info('ITERATION %d / %d', iteration, max_iter - 1)
+        logger.info('━'*60)
+
+        # ── Phase 1: Collect on train split ──
+        logger.info('[Iter %d] Phase 1: Collecting train-split trajectories', iteration)
+        train_config = deepcopy(config)
+        train_config['task']['dataset_path'] = train_dataset_path
+        if train_prepare_config:
+            train_config['task']['prepare_config'] = train_prepare_config
+
+        train_raw = str(iter_dir / 'train_raw.jsonl')
+        collect_episodes(train_config, output_path=train_raw, use_retrieval=False, adapter_paths=current_adapters)
+        _free_gpu_memory()
+
+        # ── Phase 2: Credit + Repair ──
+        logger.info('[Iter %d] Phase 2: Credit assignment + Selective repair', iteration)
+        train_annotated = str(iter_dir / 'train_annotated.jsonl')
+        train_repaired = str(iter_dir / 'train_repaired.jsonl')
+        annotate_episodes(train_raw, config, output_path=train_annotated)
+        repair_episodes(train_annotated, train_config, output_path=train_repaired, adapter_paths=current_adapters)
+        _free_gpu_memory()
+
+        # ── Phase 3: Export credit-guided training data ──
+        logger.info('[Iter %d] Phase 3: Exporting credit-guided training data', iteration)
+        export_dir = str(iter_dir / 'training_data')
+        export_result = export_credit_guided_training_data(train_repaired, config, export_dir)
+
+        # ── Phase 4: Train ──
+        logger.info('[Iter %d] Phase 4: Training (mode=%s)', iteration, mode)
+        adapters_dir = str(iter_dir / 'adapters')
+        adapter_paths = train_role_sft(
+            config=config,
+            export_dir=export_dir,
+            adapters_dir=adapters_dir,
+            training_mode=mode,
+        )
+
+        if not adapter_paths:
+            logger.error('[Iter %d] Training produced no adapters, stopping', iteration)
+            break
+
+        # Optional DPO
+        if do_dpo and export_result.get('preference_path'):
+            logger.info('[Iter %d] Phase 4b: DPO training', iteration)
+            # Use the first role's SFT adapter as base for DPO
+            first_adapter = next(iter(adapter_paths.values()))
+            dpo_out = str(iter_dir / 'dpo_adapter')
+            dpo_result = train_dpo(config, export_dir, first_adapter, dpo_out)
+            if dpo_result:
+                logger.info('[Iter %d] DPO adapter saved: %s', iteration, dpo_result)
+
+        current_adapters = adapter_paths
+
+        # ── Phase 5: Evaluate on eval split ──
+        logger.info('[Iter %d] Phase 5: Evaluating on eval split', iteration)
+        eval_config = deepcopy(config)
+        eval_config['task']['dataset_path'] = eval_dataset_path
+
+        eval_raw = str(iter_dir / 'eval_raw.jsonl')
+        collect_episodes(eval_config, output_path=eval_raw, use_retrieval=False, adapter_paths=current_adapters)
+        _free_gpu_memory()
+
+        # Credit + repair + eval on eval split
+        eval_annotated = str(iter_dir / 'eval_annotated.jsonl')
+        eval_repaired = str(iter_dir / 'eval_repaired.jsonl')
+        annotate_episodes(eval_raw, config, output_path=eval_annotated)
+        repair_episodes(eval_annotated, eval_config, output_path=eval_repaired, adapter_paths=current_adapters)
+        _free_gpu_memory()
+
+        eval_report_dir = str(iter_dir / 'eval_report')
+        metrics = evaluate_episode_file(eval_repaired, eval_report_dir)
+
+        accuracy = metrics.get('accuracy', 0)
+        logger.info('[Iter %d] Eval accuracy: %.4f (best: %.4f)', iteration, accuracy, best_accuracy)
+
+        iter_result = {
+            'iteration': iteration,
+            'accuracy': accuracy,
+            'metrics': metrics,
+            'adapter_paths': adapter_paths,
+            'export_stats': export_result.get('stats', {}),
+            'paths': {
+                'train_raw': train_raw,
+                'train_repaired': train_repaired,
+                'export_dir': export_dir,
+                'adapters_dir': adapters_dir,
+                'eval_raw': eval_raw,
+                'eval_repaired': eval_repaired,
+            },
+        }
+        iteration_results.append(iter_result)
+        write_json(str(iter_dir / 'iteration_result.json'), iter_result)
+
+        # Early stopping
+        if accuracy > best_accuracy:
+            best_accuracy = accuracy
+            no_improve_count = 0
+            write_json(str(base_dir / 'best_adapters.json'), adapter_paths)
+        else:
+            no_improve_count += 1
+            if no_improve_count >= early_stop_patience:
+                logger.info('Early stopping: no improvement for %d iterations', no_improve_count)
+                break
+
+    # Save summary
+    summary = {
+        'total_iterations': len(iteration_results),
+        'best_accuracy': best_accuracy,
+        'iteration_results': iteration_results,
+    }
+    write_json(str(base_dir / 'iterative_summary.json'), summary)
+
+    # Write iteration curve as CSV
+    curve_rows = [
+        {
+            'iteration': r['iteration'],
+            'accuracy': r['accuracy'],
+            'sft_selected': r['export_stats'].get('sft_selected', 0),
+            'preference_pairs': r['export_stats'].get('preference_pairs', 0),
+            'selection_rate': r['export_stats'].get('selection_rate', 0),
+        }
+        for r in iteration_results
+    ]
+    write_csv(base_dir / 'iteration_curve.csv', curve_rows)
+
+    logger.info('='*60)
+    logger.info('Iterative loop complete: %d iterations, best accuracy=%.4f', len(iteration_results), best_accuracy)
+    logger.info('='*60)
+
+    return summary
