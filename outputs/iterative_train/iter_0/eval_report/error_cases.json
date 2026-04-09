@@ -1,0 +1,142 @@
+[
+  {
+    "sample_id": "college_physics_test_0",
+    "dataset_name": "college_physics",
+    "pred": "A. 1.00063.",
+    "gold": "B. 1.00032",
+    "question": "A gas cell with an optical path length of 10 cm is placed in one arm of a Michelson interferometer. If the light source for the interferometer is a laser with wavelength 632.2 nm, then 100 fringes are counted as the gas cell is evacuated. What is the index of refraction of the original gas?"
+  },
+  {
+    "sample_id": "college_physics_test_3",
+    "dataset_name": "college_physics",
+    "pred": "B. mc/(2^(1/2))",
+    "gold": "D. (3^(1/2))mc",
+    "question": "If the total energy of a particle of mass m is equal to twice its rest energy, then the magnitude of the particle’s relativistic momentum is"
+  },
+  {
+    "sample_id": "college_physics_test_9",
+    "dataset_name": "college_physics",
+    "pred": "C. 10 mm",
+    "gold": "A. 10:00 PM",
+    "question": "The surface of the Sun has a temperature close to 6,000 K and it emits a blackbody (Planck) spectrum that reaches a maximum near 500 nm. For a body with a surface temperature close to 300 K, at what wavelength would the thermal spectrum reach a maximum?"
+  },
+  {
+    "sample_id": "college_physics_test_11",
+    "dataset_name": "college_physics",
+    "pred": "B. hexagon",
+    "gold": "D. tetrahedron",
+    "question": "In the diamond structure of elemental carbon, the nearest neighbors of each C atom lie at the corners of a"
+  },
+  {
+    "sample_id": "college_physics_test_12",
+    "dataset_name": "college_physics",
+    "pred": "C. 1,100 J",
+    "gold": "B. 1,000 J",
+    "question": "A heat pump is to extract heat from an outdoor environment at 7°C and heat the environment indoors to 27°C. For each 15,000 J of heat delivered indoors, the smallest amount of work that must be supplied to the heat pump is approximately"
+  },
+  {
+    "sample_id": "college_physics_test_19",
+    "dataset_name": "college_physics",
+    "pred": "A. 150 nm",
+    "gold": "B. 200 nm",
+    "question": "Blue light of wavelength 480 nanometers is most strongly reflected off a thin film of oil on a glass slide when viewed near normal incidence. Assuming that the index of refraction of the oil is 1.2 and that of the glass is 1.6, what is the minimum thickness of the oil film (other than zero) ?"
+  },
+  {
+    "sample_id": "college_physics_test_30",
+    "dataset_name": "college_physics",
+    "pred": "B. 0.15c.",
+    "gold": "C. 0.36c",
+    "question": "An observer O at rest midway between two sources of light at x = 0 and x = 10 m observes the two sources to flash simultaneously. According to a second observer O', moving at a constant speed parallel to the x-axis, one source of light flashes 13 ns before the other. Which of the following gives the speed of O' relative to O?"
+  },
+  {
+    "sample_id": "college_physics_test_38",
+    "dataset_name": "college_physics",
+    "pred": "B. 6.8 eV",
+    "gold": "A. 6.0 e",
+    "question": "Positronium is an atom formed by an electron and a positron (antielectron). It is similar to the hydrogen atom, with the positron replacing the proton. If a positronium atom makes a transition from the state with n=3 to a state with n=1, the energy of the photon emitted in this transition is closest to"
+  },
+  {
+    "sample_id": "college_physics_test_42",
+    "dataset_name": "college_physics",
+    "pred": "B. rate of change of the magnetic flux through S.",
+    "gold": "D. rate of change of the electric flux through S",
+    "question": "By definition, the electric displacement current through a surface S is proportional to the"
+  },
+  {
+    "sample_id": "college_physics_test_47",
+    "dataset_name": "college_physics",
+    "pred": "B. one-half as distant as they are today",
+    "gold": "A. one-quarter as distant as they are today",
+    "question": "At the present time, the temperature of the universe (i.e., the microwave radiation background) is about 3 K. When the temperature was 12 K, typical objects in the universe, such as galaxies, were"
+  },
+  {
+    "sample_id": "college_physics_test_48",
+    "dataset_name": "college_physics",
+    "pred": "A. 1/2.",
+    "gold": "C. 3/2",
+    "question": "Which of the following gives the total spin quantum number of the electrons in the ground state of neutral nitrogen (Z = 7)?"
+  },
+  {
+    "sample_id": "college_physics_test_50",
+    "dataset_name": "college_physics",
+    "pred": "D. 1.25mc^2",
+    "gold": "A. 0.25mc^2",
+    "question": "Protons used in cancer therapy are typically accelerated to about 0.6c. How much work must be done on a particle of mass m in order for it to reach this speed, assuming it starts at rest?"
+  },
+  {
+    "sample_id": "college_physics_test_51",
+    "dataset_name": "college_physics",
+    "pred": "C. (3/2) k T",
+    "gold": "D. 3kT",
+    "question": "A three-dimensional harmonic oscillator is in thermal equilibrium with a temperature reservoir at temperature T. The average total energy of the oscillator is"
+  },
+  {
+    "sample_id": "college_physics_test_61",
+    "dataset_name": "college_physics",
+    "pred": "B. V_0/3",
+    "gold": "D. 2V_0/3",
+    "question": "Consider three identical, ideal capacitors. The first capacitor is charged to a voltage and then disconnected from the battery. The other two capacitors, initially uncharged and connected in series, are then connected across the first capacitor. What is the final voltage on the first capacitor?"
+  },
+  {
+    "sample_id": "college_physics_test_63",
+    "dataset_name": "college_physics",
+    "pred": "C. 3mc^2",
+    "gold": "D. 4mc^2",
+    "question": "A photon strikes an electron of mass m that is initially at rest, creating an electron-positron pair. The photon is destroyed and the positron and two electrons move off at equal speeds along the initial direction of the photon. The energy of the photon was"
+  },
+  {
+    "sample_id": "college_physics_test_68",
+    "dataset_name": "college_physics",
+    "pred": "C. 0.6c",
+    "gold": "B. 0.5c",
+    "question": "Two spaceships approach Earth with equal speeds, as measured by an observer on Earth, but from opposite directions. A meterstick on one spaceship is measured to be 60 cm long by an occupant of the other spaceship. What is the speed of each spaceship, as measured by the observer on Earth?"
+  },
+  {
+    "sample_id": "college_physics_test_73",
+    "dataset_name": "college_physics",
+    "pred": "A. 500 nm.",
+    "gold": "C. 600 nm",
+    "question": "White light is normally incident on a puddle of water (index of refraction 1.33). A thin (500 nm) layer of oil (index of refraction 1.5) floats on the surface of the puddle. Of the following, the most strongly reflected wavelength is"
+  },
+  {
+    "sample_id": "college_physics_test_76",
+    "dataset_name": "college_physics",
+    "pred": "C. F_B = 2F_A",
+    "gold": "D. F_B = 4F_A",
+    "question": "A net force F_A acts on object A, and a net force F_B acts on object B. The mass of object B is twice the mass of object A, and the acceleration of object B is twice that of object A. Which of the following is true of forces F_A and F_B?"
+  },
+  {
+    "sample_id": "college_physics_test_86",
+    "dataset_name": "college_physics",
+    "pred": "D. 100 m/s north and 40 m/s down.",
+    "gold": "B. 40 m/s down",
+    "question": "An airplane drops a payload while traveling due north, parallel to the ground, at a constant speed of 100 m/s. If air resistance is neglected, what is the velocity of the payload relative to the plane 4.0 s after it is released?"
+  },
+  {
+    "sample_id": "college_physics_test_90",
+    "dataset_name": "college_physics",
+    "pred": "C. 0.121 m",
+    "gold": "D. 0.242 m",
+    "question": "The coefficient of static friction between a small coin and the surface of a turntable is 0.30. The turntable rotates at 33.3 revolutions per minute. What is the maximum distance from the center of the turntable at which the coin will not slide?"
+  }
+]

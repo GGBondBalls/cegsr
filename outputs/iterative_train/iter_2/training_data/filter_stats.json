@@ -1,0 +1,15 @@
+{
+  "total_turns": 8040,
+  "sft_selected": 7012,
+  "sft_high_credit": 6454,
+  "sft_repaired": 558,
+  "preference_pairs": 332,
+  "negative_turns": 756,
+  "per_role": {
+    "planner": 1821,
+    "solver": 1821,
+    "verifier": 1687,
+    "summarizer": 1683
+  },
+  "selection_rate": 0.8721393034825871
+}

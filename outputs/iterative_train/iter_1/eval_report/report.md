@@ -1,0 +1,72 @@
+# Run Summary
+
+## Aggregate Metrics
+- **num_episodes**: 700
+- **accuracy**: 0.8043
+- **exact_match**: 0.2186
+- **mcq_accuracy**: 0.6871
+- **repair_coverage**: 0.2857
+- **repair_success_rate**: 0.315
+- **num_changed_repairs**: 200
+- **average_trajectory_length**: 4.0
+- **average_input_tokens**: 1780.35
+- **average_output_tokens**: 340.7329
+- **retrieval_hit_usefulness_proxy**: 0.0
+- **graph_num_nodes**: 0
+- **graph_num_edges**: 0
+- **training_data_size_by_role::planner**: 700
+- **training_data_size_by_role::solver**: 700
+- **training_data_size_by_role::verifier**: 700
+- **training_data_size_by_role::summarizer**: 700
+- **dataset_accuracy::college_physics**: 0.77
+- **dataset_count::college_physics**: 100
+- **dataset_accuracy::college_chemistry**: 0.59
+- **dataset_count::college_chemistry**: 100
+- **dataset_accuracy::pubmed_qa**: 0.86
+- **dataset_count::pubmed_qa**: 100
+- **dataset_accuracy::gsm8k**: 0.82
+- **dataset_count::gsm8k**: 100
+- **dataset_accuracy::commonsense_qa**: 0.88
+- **dataset_count::commonsense_qa**: 100
+- **dataset_accuracy::ai2_arc**: 0.89
+- **dataset_count::ai2_arc**: 100
+- **dataset_accuracy::boolq**: 0.82
+- **dataset_count::boolq**: 100
+- **category_accuracy::college_physics**: 0.77
+- **category_accuracy::college_chemistry**: 0.59
+- **category_accuracy::biomedical_qa**: 0.86
+- **category_accuracy::math_word_problem**: 0.82
+- **category_accuracy::commonsense**: 0.88
+- **category_accuracy::science_mcq**: 0.89
+- **category_accuracy::reading_comprehension_yesno**: 0.82
+
+## Dataset Breakdown
+- college_physics: 0.77
+- college_chemistry: 0.59
+- pubmed_qa: 0.86
+- gsm8k: 0.82
+- commonsense_qa: 0.88
+- ai2_arc: 0.89
+- boolq: 0.82
+
+## Error Cases
+- sample_id=college_physics_test_0 | dataset=college_physics | pred=A. 1.00063 | gold=B. 1.00032
+- sample_id=college_physics_test_1 | dataset=college_physics | pred=C. 4k. | gold=D. 8k
+- sample_id=college_physics_test_4 | dataset=college_physics | pred=B. 39.5 eV | gold=A. 24.6 eV
+- sample_id=college_physics_test_6 | dataset=college_physics | pred=A. 500 nm | gold=C. 600 nm
+- sample_id=college_physics_test_8 | dataset=college_physics | pred=A. Bosons have symmetric wave functions and do not obey the Pauli exclusion principle. | gold=D. Fermions have antisymmetric wave functions and obey the Pauli exclusion principle.
+- sample_id=college_physics_test_9 | dataset=college_physics | pred=C. 10 mm | gold=A. 10:00 PM
+- sample_id=college_physics_test_10 | dataset=college_physics | pred=B. 0.1 V | gold=D. 10 V
+- sample_id=college_physics_test_11 | dataset=college_physics | pred=A. square. | gold=D. tetrahedron
+- sample_id=college_physics_test_12 | dataset=college_physics | pred=C. 1,100 J | gold=B. 1,000 J
+- sample_id=college_physics_test_30 | dataset=college_physics | pred=B. 0.15c | gold=C. 0.36c
+- sample_id=college_physics_test_36 | dataset=college_physics | pred=B. 2/3 c | gold=D. 10/11 c
+- sample_id=college_physics_test_38 | dataset=college_physics | pred=C. 12.2 eV | gold=A. 6.0 e
+- sample_id=college_physics_test_47 | dataset=college_physics | pred=B. one-half as distant as they are today. | gold=A. one-quarter as distant as they are today
+- sample_id=college_physics_test_51 | dataset=college_physics | pred=C. (3/2) kT. | gold=D. 3kT
+- sample_id=college_physics_test_56 | dataset=college_physics | pred=D. Nuclear hyperfine coupling. | gold=B. The Pauli exclusion principle
+- sample_id=college_physics_test_61 | dataset=college_physics | pred=B. V_0/3 | gold=D. 2V_0/3
+- sample_id=college_physics_test_63 | dataset=college_physics | pred=C. 3mc^2 | gold=D. 4mc^2
+- sample_id=college_physics_test_68 | dataset=college_physics | pred=D. 0.7c | gold=B. 0.5c
+- sample_id=college_physics_test_72 | dataset=college_physics | pred=A. an average of 10 times, with an rms deviation of about 3 | gold=B. an average of 10 times, with an rms deviation of about 3
+- sample_id=college_physics_test_76 | dataset=college_physics | pred=C. F_B = 2F_A | gold=D. F_B = 4F_A

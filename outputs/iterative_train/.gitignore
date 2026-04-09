@@ -1,0 +1,17 @@
+# Keep commit-friendly analysis artifacts, but ignore heavyweight training binaries
+# if future runs write directly into this directory.
+
+iter_*/adapters/*/checkpoint-*/
+iter_*/adapters/*/adapter_model.safetensors
+iter_*/adapters/*/adapter_model.bin
+iter_*/adapters/*/adapter_config.json
+iter_*/adapters/*/added_tokens.json
+iter_*/adapters/*/chat_template.jinja
+iter_*/adapters/*/merges.txt
+iter_*/adapters/*/special_tokens_map.json
+iter_*/adapters/*/tokenizer.json
+iter_*/adapters/*/tokenizer_config.json
+iter_*/adapters/*/trainer_state.json
+iter_*/adapters/*/training_args.bin
+iter_*/adapters/*/vocab.json
+iter_*/dpo_adapter/

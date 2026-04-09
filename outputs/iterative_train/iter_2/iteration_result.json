@@ -1,0 +1,73 @@
+{
+  "iteration": 2,
+  "accuracy": 0.8214,
+  "metrics": {
+    "num_episodes": 700,
+    "accuracy": 0.8214,
+    "exact_match": 0.2329,
+    "mcq_accuracy": 0.7,
+    "repair_coverage": 0.2543,
+    "repair_success_rate": 0.2978,
+    "num_changed_repairs": 178,
+    "average_trajectory_length": 4.0,
+    "average_input_tokens": 1778.4143,
+    "average_output_tokens": 341.2871,
+    "retrieval_hit_usefulness_proxy": 0.0,
+    "graph_num_nodes": 0,
+    "graph_num_edges": 0,
+    "training_data_size_by_role::planner": 700,
+    "training_data_size_by_role::solver": 700,
+    "training_data_size_by_role::verifier": 700,
+    "training_data_size_by_role::summarizer": 700,
+    "dataset_accuracy::college_physics": 0.81,
+    "dataset_count::college_physics": 100,
+    "dataset_accuracy::college_chemistry": 0.59,
+    "dataset_count::college_chemistry": 100,
+    "dataset_accuracy::pubmed_qa": 0.87,
+    "dataset_count::pubmed_qa": 100,
+    "dataset_accuracy::gsm8k": 0.85,
+    "dataset_count::gsm8k": 100,
+    "dataset_accuracy::commonsense_qa": 0.87,
+    "dataset_count::commonsense_qa": 100,
+    "dataset_accuracy::ai2_arc": 0.91,
+    "dataset_count::ai2_arc": 100,
+    "dataset_accuracy::boolq": 0.85,
+    "dataset_count::boolq": 100,
+    "category_accuracy::college_physics": 0.81,
+    "category_accuracy::college_chemistry": 0.59,
+    "category_accuracy::biomedical_qa": 0.87,
+    "category_accuracy::math_word_problem": 0.85,
+    "category_accuracy::commonsense": 0.87,
+    "category_accuracy::science_mcq": 0.91,
+    "category_accuracy::reading_comprehension_yesno": 0.85
+  },
+  "adapter_paths": {
+    "planner": "outputs/iterative_train/iter_2/adapters/planner_qlora",
+    "solver": "outputs/iterative_train/iter_2/adapters/solver_qlora",
+    "verifier": "outputs/iterative_train/iter_2/adapters/verifier_qlora",
+    "summarizer": "outputs/iterative_train/iter_2/adapters/summarizer_qlora"
+  },
+  "export_stats": {
+    "total_turns": 8040,
+    "sft_selected": 7012,
+    "sft_high_credit": 6454,
+    "sft_repaired": 558,
+    "preference_pairs": 332,
+    "negative_turns": 756,
+    "per_role": {
+      "planner": 1821,
+      "solver": 1821,
+      "verifier": 1687,
+      "summarizer": 1683
+    },
+    "selection_rate": 0.8721393034825871
+  },
+  "paths": {
+    "train_raw": "outputs/iterative_train/iter_2/train_raw.jsonl",
+    "train_repaired": "outputs/iterative_train/iter_2/train_repaired.jsonl",
+    "export_dir": "outputs/iterative_train/iter_2/training_data",
+    "adapters_dir": "outputs/iterative_train/iter_2/adapters",
+    "eval_raw": "outputs/iterative_train/iter_2/eval_raw.jsonl",
+    "eval_repaired": "outputs/iterative_train/iter_2/eval_repaired.jsonl"
+  }
+}

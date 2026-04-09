@@ -1,0 +1,142 @@
+[
+  {
+    "sample_id": "college_physics_test_0",
+    "dataset_name": "college_physics",
+    "pred": "A. 1.00063",
+    "gold": "B. 1.00032",
+    "question": "A gas cell with an optical path length of 10 cm is placed in one arm of a Michelson interferometer. If the light source for the interferometer is a laser with wavelength 632.2 nm, then 100 fringes are counted as the gas cell is evacuated. What is the index of refraction of the original gas?"
+  },
+  {
+    "sample_id": "college_physics_test_6",
+    "dataset_name": "college_physics",
+    "pred": "A. 500 nm",
+    "gold": "C. 600 nm",
+    "question": "White light is normally incident on a puddle of water (index of refraction 1.33). A thin (500 nm) layer of oil (index of refraction 1.5) floats on the surface of the puddle. Of the following, the most strongly reflected wavelength is"
+  },
+  {
+    "sample_id": "college_physics_test_9",
+    "dataset_name": "college_physics",
+    "pred": "C. 10 mm",
+    "gold": "A. 10:00 PM",
+    "question": "The surface of the Sun has a temperature close to 6,000 K and it emits a blackbody (Planck) spectrum that reaches a maximum near 500 nm. For a body with a surface temperature close to 300 K, at what wavelength would the thermal spectrum reach a maximum?"
+  },
+  {
+    "sample_id": "college_physics_test_19",
+    "dataset_name": "college_physics",
+    "pred": "A. 150 nm",
+    "gold": "B. 200 nm",
+    "question": "Blue light of wavelength 480 nanometers is most strongly reflected off a thin film of oil on a glass slide when viewed near normal incidence. Assuming that the index of refraction of the oil is 1.2 and that of the glass is 1.6, what is the minimum thickness of the oil film (other than zero) ?"
+  },
+  {
+    "sample_id": "college_physics_test_30",
+    "dataset_name": "college_physics",
+    "pred": "B. 0.15c",
+    "gold": "C. 0.36c",
+    "question": "An observer O at rest midway between two sources of light at x = 0 and x = 10 m observes the two sources to flash simultaneously. According to a second observer O', moving at a constant speed parallel to the x-axis, one source of light flashes 13 ns before the other. Which of the following gives the speed of O' relative to O?"
+  },
+  {
+    "sample_id": "college_physics_test_33",
+    "dataset_name": "college_physics",
+    "pred": "A. 0.1 GeV/c^2",
+    "gold": "D. 1.0 GeV/c^2",
+    "question": "The rest mass of a particle with total energy 5.0 GeV and momentum 4.9 GeV/c is approximately"
+  },
+  {
+    "sample_id": "college_physics_test_36",
+    "dataset_name": "college_physics",
+    "pred": "B. 2/3 c",
+    "gold": "D. 10/11 c",
+    "question": "A tube of water is traveling at 1/2 c relative to the lab frame when a beam of light traveling in the same direction as the tube enters it. What is the speed of light in the water relative to the lab frame? (The index of refraction of water is 4/3.)"
+  },
+  {
+    "sample_id": "college_physics_test_38",
+    "dataset_name": "college_physics",
+    "pred": "B. 6.8 eV",
+    "gold": "A. 6.0 e",
+    "question": "Positronium is an atom formed by an electron and a positron (antielectron). It is similar to the hydrogen atom, with the positron replacing the proton. If a positronium atom makes a transition from the state with n=3 to a state with n=1, the energy of the photon emitted in this transition is closest to"
+  },
+  {
+    "sample_id": "college_physics_test_42",
+    "dataset_name": "college_physics",
+    "pred": "B. rate of change of the magnetic flux through S",
+    "gold": "D. rate of change of the electric flux through S",
+    "question": "By definition, the electric displacement current through a surface S is proportional to the"
+  },
+  {
+    "sample_id": "college_physics_test_48",
+    "dataset_name": "college_physics",
+    "pred": "B. 1",
+    "gold": "C. 3/2",
+    "question": "Which of the following gives the total spin quantum number of the electrons in the ground state of neutral nitrogen (Z = 7)?"
+  },
+  {
+    "sample_id": "college_physics_test_51",
+    "dataset_name": "college_physics",
+    "pred": "C. (3/2) k T",
+    "gold": "D. 3kT",
+    "question": "A three-dimensional harmonic oscillator is in thermal equilibrium with a temperature reservoir at temperature T. The average total energy of the oscillator is"
+  },
+  {
+    "sample_id": "college_physics_test_53",
+    "dataset_name": "college_physics",
+    "pred": "B. 606 Hz",
+    "gold": "C. 612 Hz",
+    "question": "The driver of a police car hears an echo of the car’s siren from a wall toward which the car is moving with a speed of 3.5 m/s. If the speed of sound is 350 m/s and the frequency of the siren is 600 Hz, the driver hears the echo at a frequency nearest to which of the following?"
+  },
+  {
+    "sample_id": "college_physics_test_61",
+    "dataset_name": "college_physics",
+    "pred": "B. V_0/3",
+    "gold": "D. 2V_0/3",
+    "question": "Consider three identical, ideal capacitors. The first capacitor is charged to a voltage and then disconnected from the battery. The other two capacitors, initially uncharged and connected in series, are then connected across the first capacitor. What is the final voltage on the first capacitor?"
+  },
+  {
+    "sample_id": "college_physics_test_63",
+    "dataset_name": "college_physics",
+    "pred": "B. 2mc^2",
+    "gold": "D. 4mc^2",
+    "question": "A photon strikes an electron of mass m that is initially at rest, creating an electron-positron pair. The photon is destroyed and the positron and two electrons move off at equal speeds along the initial direction of the photon. The energy of the photon was"
+  },
+  {
+    "sample_id": "college_physics_test_68",
+    "dataset_name": "college_physics",
+    "pred": "C. 0.6c",
+    "gold": "B. 0.5c",
+    "question": "Two spaceships approach Earth with equal speeds, as measured by an observer on Earth, but from opposite directions. A meterstick on one spaceship is measured to be 60 cm long by an occupant of the other spaceship. What is the speed of each spaceship, as measured by the observer on Earth?"
+  },
+  {
+    "sample_id": "college_physics_test_73",
+    "dataset_name": "college_physics",
+    "pred": "A. 500 nm",
+    "gold": "C. 600 nm",
+    "question": "White light is normally incident on a puddle of water (index of refraction 1.33). A thin (500 nm) layer of oil (index of refraction 1.5) floats on the surface of the puddle. Of the following, the most strongly reflected wavelength is"
+  },
+  {
+    "sample_id": "college_physics_test_86",
+    "dataset_name": "college_physics",
+    "pred": "D. 100 m/s north and 40 m/s down.",
+    "gold": "B. 40 m/s down",
+    "question": "An airplane drops a payload while traveling due north, parallel to the ground, at a constant speed of 100 m/s. If air resistance is neglected, what is the velocity of the payload relative to the plane 4.0 s after it is released?"
+  },
+  {
+    "sample_id": "college_physics_test_90",
+    "dataset_name": "college_physics",
+    "pred": "C. 0.121 m",
+    "gold": "D. 0.242 m",
+    "question": "The coefficient of static friction between a small coin and the surface of a turntable is 0.30. The turntable rotates at 33.3 revolutions per minute. What is the maximum distance from the center of the turntable at which the coin will not slide?"
+  },
+  {
+    "sample_id": "college_physics_test_95",
+    "dataset_name": "college_physics",
+    "pred": "D. deflected in the -y-direction",
+    "gold": "B. deflected in the -x-direction",
+    "question": "A proton moves in the +z-direction after being accelerated from rest through a potential difference V. The proton then passes through a region with a uniform electric field E in the +x-direction and a uniform magnetic field B in the +y-direction, but the proton’s trajectory is not affected. If the experiment were repeated using a potential difference of 2V, the proton would then be"
+  },
+  {
+    "sample_id": "college_chemistry_test_1",
+    "dataset_name": "college_chemistry",
+    "pred": "A. 0.375 mT",
+    "gold": "D. 0.58 G",
+    "question": "Predict the hyperfine value for the EPR spectrum of fully deuteriated benzene radical anion C6D6•-."
+  }
+]

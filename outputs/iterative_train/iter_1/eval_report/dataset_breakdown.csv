@@ -1,0 +1,8 @@
+name,accuracy
+college_physics,0.77
+college_chemistry,0.59
+pubmed_qa,0.86
+gsm8k,0.82
+commonsense_qa,0.88
+ai2_arc,0.89
+boolq,0.82

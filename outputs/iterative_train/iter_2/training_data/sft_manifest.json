@@ -1,0 +1,6 @@
+{
+  "planner": "outputs/iterative_train/iter_2/training_data/planner_sft.jsonl",
+  "solver": "outputs/iterative_train/iter_2/training_data/solver_sft.jsonl",
+  "verifier": "outputs/iterative_train/iter_2/training_data/verifier_sft.jsonl",
+  "summarizer": "outputs/iterative_train/iter_2/training_data/summarizer_sft.jsonl"
+}
