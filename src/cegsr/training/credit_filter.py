@@ -5,16 +5,21 @@ instead of blindly using all turns as SiriuS does.
 """
 from __future__ import annotations
 
+import logging
 from collections import defaultdict
 from dataclasses import dataclass, field
 from typing import Any
 
-from cegsr.trajectories.schema import AgentTurn, CreditRecord, EpisodeTrajectory
+from cegsr.trajectories.schema import AgentTurn, EpisodeTrajectory
+
+logger = logging.getLogger(__name__)
 
 
 @dataclass
 class CreditFilterConfig:
-    high_threshold: float = 0.65
+    selection_mode: str = 'percentile'   # 'threshold' or 'percentile'
+    top_percentile: float = 50.0         # top N% by credit (percentile mode)
+    high_threshold: float = 0.65         # static threshold (threshold mode)
     low_threshold: float = 0.35
     include_repaired: bool = True
     min_samples_per_role: int = 10
@@ -66,6 +71,26 @@ def filter_by_credit(
     cfg = config or CreditFilterConfig()
     result = FilteredData()
 
+    # ── Determine effective threshold ──
+    if cfg.selection_mode == 'percentile':
+        all_scores: list[float] = []
+        for episode in episodes:
+            credit_map = _build_credit_map(episode)
+            for turn in episode.turns:
+                all_scores.append(credit_map.get(turn.turn_id, 0.0))
+        if all_scores:
+            all_scores_sorted = sorted(all_scores)
+            cutoff_idx = max(0, int(len(all_scores_sorted) * (1 - cfg.top_percentile / 100)))
+            effective_threshold = all_scores_sorted[cutoff_idx]
+        else:
+            effective_threshold = cfg.high_threshold
+        logger.info(
+            'Percentile filter: top %.0f%% → dynamic threshold=%.4f (from %d turns)',
+            cfg.top_percentile, effective_threshold, len(all_scores),
+        )
+    else:
+        effective_threshold = cfg.high_threshold
+
     role_counts: dict[str, int] = defaultdict(int)
     total_turns = 0
     high_credit_count = 0
@@ -79,7 +104,7 @@ def filter_by_credit(
             score = credit_map.get(turn.turn_id, 0.0)
 
             # High credit turns → SFT positive
-            if score >= cfg.high_threshold:
+            if score >= effective_threshold:
                 result.sft_turns.append((episode, turn))
                 role_counts[turn.role] += 1
                 high_credit_count += 1
@@ -101,7 +126,7 @@ def filter_by_credit(
     for role in all_roles:
         if role_counts[role] >= cfg.min_samples_per_role:
             continue
-        threshold = cfg.high_threshold - cfg.fallback_threshold_step
+        threshold = effective_threshold - cfg.fallback_threshold_step
         while threshold >= cfg.low_threshold and role_counts[role] < cfg.min_samples_per_role:
             for episode in episodes:
                 credit_map = _build_credit_map(episode)
@@ -117,6 +142,7 @@ def filter_by_credit(
 
     # Extract preference pairs from repair records
     for episode in episodes:
+        turn_lookup = {t.turn_id: t for t in episode.turns}
         for repair in episode.repair_records:
             old_text = "\n".join(item.get("response", "") for item in repair.old_span)
             new_text = "\n".join(item.get("response", "") for item in repair.new_span)
@@ -124,13 +150,18 @@ def filter_by_credit(
                 continue
             if old_text.strip() == new_text.strip():
                 continue
-            prompt_messages = []
-            if episode.turns:
-                prompt_messages = episode.turns[0].prompt_messages
+            # Use the repaired turn's actual prompt (not always turns[0])
+            target_turn = turn_lookup.get(repair.target_id)
+            if target_turn:
+                prompt_messages = target_turn.prompt_messages
+                role = target_turn.role
+            else:
+                prompt_messages = episode.turns[0].prompt_messages if episode.turns else []
+                role = repair.target_id.split("_")[-1] if "_" in repair.target_id else ""
             result.preference_pairs.append({
                 "episode_id": episode.episode_id,
                 "repair_id": repair.repair_id,
-                "role": repair.target_id.split("_")[-1] if "_" in repair.target_id else "",
+                "role": role,
                 "prompt_messages": prompt_messages,
                 "chosen": new_text,
                 "rejected": old_text,
@@ -145,5 +176,7 @@ def filter_by_credit(
         "negative_turns": len(result.negative_turns),
         "per_role": dict(role_counts),
         "selection_rate": len(result.sft_turns) / max(1, total_turns),
+        "effective_threshold": effective_threshold,
+        "selection_mode": cfg.selection_mode,
     }
     return result

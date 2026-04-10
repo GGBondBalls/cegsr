@@ -479,6 +479,8 @@ def export_credit_guided_training_data(
 
     filter_cfg = config.get('training', {}).get('credit_filter', {})
     credit_cfg = CreditFilterConfig(
+        selection_mode=filter_cfg.get('selection_mode', 'percentile'),
+        top_percentile=filter_cfg.get('top_percentile', 50.0),
         high_threshold=filter_cfg.get('high_threshold', 0.65),
         low_threshold=filter_cfg.get('low_threshold', 0.35),
         include_repaired=filter_cfg.get('include_repaired', True),
@@ -526,6 +528,55 @@ def _free_gpu_memory() -> None:
         pass
 
 
+def _merge_export_dirs(export_dirs: list[str], merged_dir: str) -> dict[str, Any]:
+    """Merge SFT and preference data from multiple iterations into one directory.
+
+    Used for cross-iteration data accumulation so training benefits from all
+    previous iterations' high-credit data, not just the current one.
+    """
+    merged = ensure_dir(merged_dir)
+    by_role: dict[str, list[dict]] = {}
+    pref_pairs: list[dict] = []
+
+    for export_dir in export_dirs:
+        export_path = Path(export_dir)
+        manifest_file = export_path / 'sft_manifest.json'
+        if not manifest_file.exists():
+            continue
+        import json as _json
+        manifest = _json.loads(manifest_file.read_text(encoding='utf-8'))
+        for role in manifest:
+            sft_file = export_path / f'{role}_sft.jsonl'
+            if sft_file.exists():
+                by_role.setdefault(role, []).extend(read_jsonl(sft_file))
+        pref_file = export_path / 'preference_pairs.jsonl'
+        if pref_file.exists():
+            pref_pairs.extend(read_jsonl(pref_file))
+
+    new_manifest: dict[str, str] = {}
+    for role, rows in by_role.items():
+        path = merged / f'{role}_sft.jsonl'
+        write_jsonl(path, rows)
+        new_manifest[role] = str(path)
+    write_json(merged / 'sft_manifest.json', new_manifest)
+
+    pref_path = None
+    if pref_pairs:
+        pref_path = str(merged / 'preference_pairs.jsonl')
+        write_jsonl(merged / 'preference_pairs.jsonl', pref_pairs)
+
+    dataset_info = build_dataset_info(new_manifest, preference_path=pref_path)
+    write_json(merged / 'dataset_info.json', dataset_info)
+
+    merge_stats = {
+        'num_iters_merged': len(export_dirs),
+        'total_per_role': {r: len(rows) for r, rows in by_role.items()},
+        'total_preference_pairs': len(pref_pairs),
+    }
+    logger.info('Cross-iter merge: %d iters → %s', len(export_dirs), merge_stats['total_per_role'])
+    return merge_stats
+
+
 def run_iterative_loop(
     config_or_path: str | dict[str, Any],
     output_dir: str | None = None,
@@ -533,16 +584,18 @@ def run_iterative_loop(
     training_mode: str | None = None,
     dpo_enabled: bool | None = None,
     early_stop_patience: int = 2,
+    credit_mode: str = 'fine_grained',
+    cross_iteration_mix: bool | None = None,
 ) -> dict[str, Any]:
     """Run the full iterative self-improvement loop.
 
     Each iteration:
       1. Collect train-split trajectories (with current model)
-      2. Credit assignment
-      3. Selective repair
-      4. Export credit-guided training data
-      5. Train via LLaMA-Factory (SFT + optional DPO)
-      6. Evaluate on eval-split with fine-tuned model
+      2. Credit assignment (+ selective repair if fine_grained)
+      3. Export credit-guided training data
+      4. Train via LLaMA-Factory (SFT + optional DPO)
+      5. Evaluate on eval-split with fine-tuned model
+         — reports BOTH raw and repaired accuracy
 
     Args:
         config_or_path: Config file path or dict.
@@ -551,6 +604,8 @@ def run_iterative_loop(
         training_mode: 'lora' or 'qlora' (default from config).
         dpo_enabled: Whether to run DPO after SFT.
         early_stop_patience: Stop if no improvement for N iterations.
+        credit_mode: 'fine_grained' (CEG-SR) or 'trajectory' (SiriuS-SFT baseline).
+        cross_iteration_mix: Accumulate training data across iterations.
 
     Returns:
         Summary dict with per-iteration metrics and paths.
@@ -563,9 +618,21 @@ def run_iterative_loop(
     max_iter = max_iterations or iter_cfg.get('max_iterations', 3)
     mode = training_mode or iter_cfg.get('training_mode', 'qlora')
     do_dpo = dpo_enabled if dpo_enabled is not None else iter_cfg.get('dpo_enabled', False)
+    do_cross_mix = cross_iteration_mix if cross_iteration_mix is not None else iter_cfg.get('cross_iteration_mix', True)
     train_dataset_path = iter_cfg.get('train_dataset_path', config['task']['dataset_path'])
     train_prepare_config = iter_cfg.get('train_dataset_config')
     eval_dataset_path = iter_cfg.get('eval_dataset_path', config['task']['dataset_path'])
+
+    # In trajectory mode (SiriuS-SFT baseline): binary credit, no repair, no DPO
+    is_trajectory_mode = credit_mode == 'trajectory'
+    if is_trajectory_mode:
+        do_dpo = False
+        logger.info('SiriuS-SFT baseline mode: trajectory-level credit, no repair, no DPO')
+        # Override credit filter to threshold mode with 0.5 (keep successful episodes)
+        config_traj = deepcopy(config)
+        config_traj.setdefault('training', {}).setdefault('credit_filter', {})
+        config_traj['training']['credit_filter']['selection_mode'] = 'threshold'
+        config_traj['training']['credit_filter']['high_threshold'] = 0.5
 
     base_dir = Path(config['project']['output_dir'])
     ensure_dir(base_dir)
@@ -574,15 +641,48 @@ def run_iterative_loop(
     best_accuracy = 0.0
     no_improve_count = 0
     current_adapters: dict[str, str] | None = None
+    all_export_dirs: list[str] = []
 
     logger.info('='*60)
     logger.info('Starting iterative self-improvement loop')
+    logger.info('  credit_mode: %s', credit_mode)
     logger.info('  max_iterations: %d', max_iter)
     logger.info('  training_mode: %s', mode)
     logger.info('  dpo_enabled: %s', do_dpo)
+    logger.info('  cross_iteration_mix: %s', do_cross_mix)
     logger.info('  train_dataset: %s', train_dataset_path)
     logger.info('  eval_dataset: %s', eval_dataset_path)
     logger.info('='*60)
+
+    # ── Baseline eval (no adapters, no training) ──
+    logger.info('Running baseline evaluation (no adapters)...')
+    baseline_dir = ensure_dir(base_dir / 'baseline')
+    eval_config_base = deepcopy(config)
+    eval_config_base['task']['dataset_path'] = eval_dataset_path
+    baseline_raw_file = str(baseline_dir / 'eval_raw.jsonl')
+    collect_episodes(eval_config_base, output_path=baseline_raw_file, use_retrieval=False, adapter_paths=None)
+    _free_gpu_memory()
+    baseline_raw_metrics = evaluate_episode_file(baseline_raw_file, str(baseline_dir / 'eval_raw_report'))
+    baseline_result: dict[str, Any] = {
+        'iteration': -1,
+        'raw_accuracy': baseline_raw_metrics.get('accuracy', 0),
+        'raw_metrics': baseline_raw_metrics,
+    }
+    if not is_trajectory_mode:
+        baseline_ann = str(baseline_dir / 'eval_annotated.jsonl')
+        baseline_rep = str(baseline_dir / 'eval_repaired.jsonl')
+        annotate_episodes(baseline_raw_file, config, output_path=baseline_ann)
+        repair_episodes(baseline_ann, eval_config_base, output_path=baseline_rep, adapter_paths=None)
+        _free_gpu_memory()
+        baseline_repaired_metrics = evaluate_episode_file(baseline_rep, str(baseline_dir / 'eval_repaired_report'))
+        baseline_result['accuracy'] = baseline_repaired_metrics.get('accuracy', 0)
+        baseline_result['repaired_metrics'] = baseline_repaired_metrics
+    else:
+        baseline_result['accuracy'] = baseline_result['raw_accuracy']
+
+    logger.info('Baseline: raw_accuracy=%.4f, accuracy=%.4f',
+                baseline_result['raw_accuracy'], baseline_result['accuracy'])
+    write_json(str(baseline_dir / 'baseline_result.json'), baseline_result)
 
     for iteration in range(max_iter):
         iter_dir = ensure_dir(base_dir / f'iter_{iteration}')
@@ -591,9 +691,11 @@ def run_iterative_loop(
         logger.info('ITERATION %d / %d', iteration, max_iter - 1)
         logger.info('━'*60)
 
+        active_config = config_traj if is_trajectory_mode else config
+
         # ── Phase 1: Collect on train split ──
         logger.info('[Iter %d] Phase 1: Collecting train-split trajectories', iteration)
-        train_config = deepcopy(config)
+        train_config = deepcopy(active_config)
         train_config['task']['dataset_path'] = train_dataset_path
         if train_prepare_config:
             train_config['task']['prepare_config'] = train_prepare_config
@@ -603,24 +705,42 @@ def run_iterative_loop(
         _free_gpu_memory()
 
         # ── Phase 2: Credit + Repair ──
-        logger.info('[Iter %d] Phase 2: Credit assignment + Selective repair', iteration)
         train_annotated = str(iter_dir / 'train_annotated.jsonl')
         train_repaired = str(iter_dir / 'train_repaired.jsonl')
-        annotate_episodes(train_raw, config, output_path=train_annotated)
-        repair_episodes(train_annotated, train_config, output_path=train_repaired, adapter_paths=current_adapters)
+
+        if is_trajectory_mode:
+            logger.info('[Iter %d] Phase 2: Trajectory-level credit (no repair)', iteration)
+            annotate_episodes(train_raw, active_config, output_path=train_annotated, trajectory_level_only=True)
+            train_repaired = train_annotated  # no repair
+        else:
+            logger.info('[Iter %d] Phase 2: Fine-grained credit + Selective repair', iteration)
+            annotate_episodes(train_raw, active_config, output_path=train_annotated)
+            repair_episodes(train_annotated, train_config, output_path=train_repaired, adapter_paths=current_adapters)
         _free_gpu_memory()
 
         # ── Phase 3: Export credit-guided training data ──
         logger.info('[Iter %d] Phase 3: Exporting credit-guided training data', iteration)
         export_dir = str(iter_dir / 'training_data')
-        export_result = export_credit_guided_training_data(train_repaired, config, export_dir)
+        export_result = export_credit_guided_training_data(train_repaired, active_config, export_dir)
+        all_export_dirs.append(export_dir)
+
+        # ── Phase 3.5: Cross-iteration data merge ──
+        if do_cross_mix and len(all_export_dirs) > 1:
+            logger.info('[Iter %d] Phase 3.5: Merging %d iterations of training data', iteration, len(all_export_dirs))
+            merged_dir = str(iter_dir / 'training_data_merged')
+            merge_stats = _merge_export_dirs(all_export_dirs, merged_dir)
+            training_dir = merged_dir
+            export_result['merge_stats'] = merge_stats
+        else:
+            training_dir = export_dir
 
         # ── Phase 4: Train ──
-        logger.info('[Iter %d] Phase 4: Training (mode=%s)', iteration, mode)
+        logger.info('[Iter %d] Phase 4: Training (mode=%s, data_dir=%s)', iteration, mode,
+                     'merged' if training_dir != export_dir else 'current')
         adapters_dir = str(iter_dir / 'adapters')
         adapter_paths = train_role_sft(
-            config=config,
-            export_dir=export_dir,
+            config=active_config,
+            export_dir=training_dir,
             adapters_dir=adapters_dir,
             training_mode=mode,
         )
@@ -629,53 +749,65 @@ def run_iterative_loop(
             logger.error('[Iter %d] Training produced no adapters, stopping', iteration)
             break
 
-        # Optional DPO
+        # Optional DPO — train on solver's adapter, then replace it
         if do_dpo and export_result.get('preference_path'):
-            logger.info('[Iter %d] Phase 4b: DPO training', iteration)
-            # Use the first role's SFT adapter as base for DPO
-            first_adapter = next(iter(adapter_paths.values()))
-            dpo_out = str(iter_dir / 'dpo_adapter')
-            dpo_result = train_dpo(config, export_dir, first_adapter, dpo_out)
+            logger.info('[Iter %d] Phase 4b: DPO training on solver adapter', iteration)
+            solver_adapter = adapter_paths.get('solver', next(iter(adapter_paths.values())))
+            dpo_out = str(iter_dir / 'dpo_solver')
+            dpo_result = train_dpo(active_config, training_dir, solver_adapter, dpo_out)
             if dpo_result:
-                logger.info('[Iter %d] DPO adapter saved: %s', iteration, dpo_result)
+                adapter_paths['solver'] = dpo_result
+                logger.info('[Iter %d] Solver adapter updated to DPO: %s', iteration, dpo_result)
 
         current_adapters = adapter_paths
 
         # ── Phase 5: Evaluate on eval split ──
         logger.info('[Iter %d] Phase 5: Evaluating on eval split', iteration)
-        eval_config = deepcopy(config)
+        eval_config = deepcopy(active_config)
         eval_config['task']['dataset_path'] = eval_dataset_path
 
+        # 5a: Raw eval (model capability without repair)
         eval_raw = str(iter_dir / 'eval_raw.jsonl')
         collect_episodes(eval_config, output_path=eval_raw, use_retrieval=False, adapter_paths=current_adapters)
         _free_gpu_memory()
 
-        # Credit + repair + eval on eval split
-        eval_annotated = str(iter_dir / 'eval_annotated.jsonl')
-        eval_repaired = str(iter_dir / 'eval_repaired.jsonl')
-        annotate_episodes(eval_raw, config, output_path=eval_annotated)
-        repair_episodes(eval_annotated, eval_config, output_path=eval_repaired, adapter_paths=current_adapters)
-        _free_gpu_memory()
+        raw_report_dir = str(iter_dir / 'eval_raw_report')
+        raw_metrics = evaluate_episode_file(eval_raw, raw_report_dir)
+        raw_accuracy = raw_metrics.get('accuracy', 0)
 
-        eval_report_dir = str(iter_dir / 'eval_report')
-        metrics = evaluate_episode_file(eval_repaired, eval_report_dir)
+        # 5b: Repaired eval (system accuracy with repair)
+        if not is_trajectory_mode:
+            eval_annotated = str(iter_dir / 'eval_annotated.jsonl')
+            eval_repaired = str(iter_dir / 'eval_repaired.jsonl')
+            annotate_episodes(eval_raw, active_config, output_path=eval_annotated)
+            repair_episodes(eval_annotated, eval_config, output_path=eval_repaired, adapter_paths=current_adapters)
+            _free_gpu_memory()
+            eval_report_dir = str(iter_dir / 'eval_report')
+            repaired_metrics = evaluate_episode_file(eval_repaired, eval_report_dir)
+            accuracy = repaired_metrics.get('accuracy', 0)
+        else:
+            repaired_metrics = raw_metrics
+            accuracy = raw_accuracy
 
-        accuracy = metrics.get('accuracy', 0)
-        logger.info('[Iter %d] Eval accuracy: %.4f (best: %.4f)', iteration, accuracy, best_accuracy)
+        logger.info('[Iter %d] raw_accuracy=%.4f, accuracy=%.4f (best=%.4f)',
+                     iteration, raw_accuracy, accuracy, best_accuracy)
 
         iter_result = {
             'iteration': iteration,
             'accuracy': accuracy,
-            'metrics': metrics,
+            'raw_accuracy': raw_accuracy,
+            'raw_metrics': raw_metrics,
+            'metrics': repaired_metrics,
             'adapter_paths': adapter_paths,
             'export_stats': export_result.get('stats', {}),
             'paths': {
                 'train_raw': train_raw,
                 'train_repaired': train_repaired,
                 'export_dir': export_dir,
+                'training_dir': training_dir,
                 'adapters_dir': adapters_dir,
                 'eval_raw': eval_raw,
-                'eval_repaired': eval_repaired,
+                'eval_repaired': str(iter_dir / 'eval_repaired.jsonl') if not is_trajectory_mode else eval_raw,
             },
         }
         iteration_results.append(iter_result)
@@ -696,25 +828,37 @@ def run_iterative_loop(
     summary = {
         'total_iterations': len(iteration_results),
         'best_accuracy': best_accuracy,
+        'credit_mode': credit_mode,
+        'cross_iteration_mix': do_cross_mix,
+        'baseline': baseline_result,
         'iteration_results': iteration_results,
     }
     write_json(str(base_dir / 'iterative_summary.json'), summary)
 
-    # Write iteration curve as CSV
+    # Write iteration curve as CSV (include raw accuracy)
     curve_rows = [
         {
             'iteration': r['iteration'],
+            'raw_accuracy': r['raw_accuracy'],
             'accuracy': r['accuracy'],
             'sft_selected': r['export_stats'].get('sft_selected', 0),
             'preference_pairs': r['export_stats'].get('preference_pairs', 0),
             'selection_rate': r['export_stats'].get('selection_rate', 0),
+            'effective_threshold': r['export_stats'].get('effective_threshold', 0),
         }
         for r in iteration_results
     ]
     write_csv(base_dir / 'iteration_curve.csv', curve_rows)
 
     logger.info('='*60)
-    logger.info('Iterative loop complete: %d iterations, best accuracy=%.4f', len(iteration_results), best_accuracy)
+    logger.info('Iterative loop complete: %d iterations, best accuracy=%.4f',
+                len(iteration_results), best_accuracy)
+    logger.info('  Baseline: raw=%.4f', baseline_result['raw_accuracy'])
+    for r in iteration_results:
+        logger.info('  Iter %d: raw=%.4f  repaired=%.4f  sft=%d  sel_rate=%.1f%%',
+                     r['iteration'], r['raw_accuracy'], r['accuracy'],
+                     r['export_stats'].get('sft_selected', 0),
+                     r['export_stats'].get('selection_rate', 0) * 100)
     logger.info('='*60)
 
     return summary
