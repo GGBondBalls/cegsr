@@ -1,0 +1,142 @@
+[
+  {
+    "sample_id": "college_physics_test_0",
+    "dataset_name": "college_physics",
+    "pred": "A. 1.00063",
+    "gold": "B. 1.00032",
+    "question": "A gas cell with an optical path length of 10 cm is placed in one arm of a Michelson interferometer. If the light source for the interferometer is a laser with wavelength 632.2 nm, then 100 fringes are counted as the gas cell is evacuated. What is the index of refraction of the original gas?"
+  },
+  {
+    "sample_id": "college_physics_test_6",
+    "dataset_name": "college_physics",
+    "pred": "A. 500 nm",
+    "gold": "C. 600 nm",
+    "question": "White light is normally incident on a puddle of water (index of refraction 1.33). A thin (500 nm) layer of oil (index of refraction 1.5) floats on the surface of the puddle. Of the following, the most strongly reflected wavelength is"
+  },
+  {
+    "sample_id": "college_physics_test_9",
+    "dataset_name": "college_physics",
+    "pred": "D. 100 mm",
+    "gold": "A. 10:00 PM",
+    "question": "The surface of the Sun has a temperature close to 6,000 K and it emits a blackbody (Planck) spectrum that reaches a maximum near 500 nm. For a body with a surface temperature close to 300 K, at what wavelength would the thermal spectrum reach a maximum?"
+  },
+  {
+    "sample_id": "college_physics_test_11",
+    "dataset_name": "college_physics",
+    "pred": "A. square.",
+    "gold": "D. tetrahedron",
+    "question": "In the diamond structure of elemental carbon, the nearest neighbors of each C atom lie at the corners of a"
+  },
+  {
+    "sample_id": "college_physics_test_12",
+    "dataset_name": "college_physics",
+    "pred": "C. 1,100 J",
+    "gold": "B. 1,000 J",
+    "question": "A heat pump is to extract heat from an outdoor environment at 7°C and heat the environment indoors to 27°C. For each 15,000 J of heat delivered indoors, the smallest amount of work that must be supplied to the heat pump is approximately"
+  },
+  {
+    "sample_id": "college_physics_test_30",
+    "dataset_name": "college_physics",
+    "pred": "B. 0.15c",
+    "gold": "C. 0.36c",
+    "question": "An observer O at rest midway between two sources of light at x = 0 and x = 10 m observes the two sources to flash simultaneously. According to a second observer O', moving at a constant speed parallel to the x-axis, one source of light flashes 13 ns before the other. Which of the following gives the speed of O' relative to O?"
+  },
+  {
+    "sample_id": "college_physics_test_36",
+    "dataset_name": "college_physics",
+    "pred": "B. 2/3 c",
+    "gold": "D. 10/11 c",
+    "question": "A tube of water is traveling at 1/2 c relative to the lab frame when a beam of light traveling in the same direction as the tube enters it. What is the speed of light in the water relative to the lab frame? (The index of refraction of water is 4/3.)"
+  },
+  {
+    "sample_id": "college_physics_test_37",
+    "dataset_name": "college_physics",
+    "pred": "D. 4 N",
+    "gold": "C. 3 N",
+    "question": "A 10 kg box slides horizontally without friction at a speed of 1 m/s. At one point, a constant force is applied to the box in the direction of its motion. The box travels 5 m with the constant force applied. The force is then removed, leaving the box with a speed of 2 m/s. Which of the following gives the magnitude of the applied force?"
+  },
+  {
+    "sample_id": "college_physics_test_38",
+    "dataset_name": "college_physics",
+    "pred": "B. 6.8 eV",
+    "gold": "A. 6.0 e",
+    "question": "Positronium is an atom formed by an electron and a positron (antielectron). It is similar to the hydrogen atom, with the positron replacing the proton. If a positronium atom makes a transition from the state with n=3 to a state with n=1, the energy of the photon emitted in this transition is closest to"
+  },
+  {
+    "sample_id": "college_physics_test_42",
+    "dataset_name": "college_physics",
+    "pred": "B. rate of change of the magnetic flux through S.",
+    "gold": "D. rate of change of the electric flux through S",
+    "question": "By definition, the electric displacement current through a surface S is proportional to the"
+  },
+  {
+    "sample_id": "college_physics_test_43",
+    "dataset_name": "college_physics",
+    "pred": "B. 1 x 10^-5 N.",
+    "gold": "C. 2 x 10^-5 N",
+    "question": "Assume that the solar flux at Earth’s surface is 1,000 W/m^2 and that the sunlight is normal to a completely reflecting surface with an area of 3 m^2. What is the total radiation force exerted on the surface?"
+  },
+  {
+    "sample_id": "college_physics_test_47",
+    "dataset_name": "college_physics",
+    "pred": "D. two times as distant as they are today",
+    "gold": "A. one-quarter as distant as they are today",
+    "question": "At the present time, the temperature of the universe (i.e., the microwave radiation background) is about 3 K. When the temperature was 12 K, typical objects in the universe, such as galaxies, were"
+  },
+  {
+    "sample_id": "college_physics_test_51",
+    "dataset_name": "college_physics",
+    "pred": "C. (3/2) k T",
+    "gold": "D. 3kT",
+    "question": "A three-dimensional harmonic oscillator is in thermal equilibrium with a temperature reservoir at temperature T. The average total energy of the oscillator is"
+  },
+  {
+    "sample_id": "college_physics_test_52",
+    "dataset_name": "college_physics",
+    "pred": "B. 594 Hz.",
+    "gold": "D. 612 Hz",
+    "question": "The driver of a police car hears an echo of the car’s siren from a wall toward which the car is moving with a speed of 3.5 m/s. If the speed of sound is 350 m/s and the frequency of the siren is 600 Hz, the driver hears the echo at a frequency nearest to which of the following?"
+  },
+  {
+    "sample_id": "college_physics_test_53",
+    "dataset_name": "college_physics",
+    "pred": "B. 606 Hz",
+    "gold": "C. 612 Hz",
+    "question": "The driver of a police car hears an echo of the car’s siren from a wall toward which the car is moving with a speed of 3.5 m/s. If the speed of sound is 350 m/s and the frequency of the siren is 600 Hz, the driver hears the echo at a frequency nearest to which of the following?"
+  },
+  {
+    "sample_id": "college_physics_test_56",
+    "dataset_name": "college_physics",
+    "pred": "D. Nuclear hyperfine coupling",
+    "gold": "B. The Pauli exclusion principle",
+    "question": "Excited states of the helium atom can be characterized as para- (antiparallel electron spins) and ortho- (parallel electron spins). The observation that an ortho- state has lower energy than the corresponding para- state can be understood in terms of which of the following?"
+  },
+  {
+    "sample_id": "college_physics_test_61",
+    "dataset_name": "college_physics",
+    "pred": "B. V_0/3",
+    "gold": "D. 2V_0/3",
+    "question": "Consider three identical, ideal capacitors. The first capacitor is charged to a voltage and then disconnected from the battery. The other two capacitors, initially uncharged and connected in series, are then connected across the first capacitor. What is the final voltage on the first capacitor?"
+  },
+  {
+    "sample_id": "college_physics_test_67",
+    "dataset_name": "college_physics",
+    "pred": "D. 1.25mc^2",
+    "gold": "A. 0.25mc^2",
+    "question": "Protons used in cancer therapy are typically accelerated to about 0.6c . How much work must be done on a particle of mass m in order for it to reach this speed, assuming it starts at rest?"
+  },
+  {
+    "sample_id": "college_physics_test_68",
+    "dataset_name": "college_physics",
+    "pred": "C. 0.6c.",
+    "gold": "B. 0.5c",
+    "question": "Two spaceships approach Earth with equal speeds, as measured by an observer on Earth, but from opposite directions. A meterstick on one spaceship is measured to be 60 cm long by an occupant of the other spaceship. What is the speed of each spaceship, as measured by the observer on Earth?"
+  },
+  {
+    "sample_id": "college_physics_test_73",
+    "dataset_name": "college_physics",
+    "pred": "A. 500 nm",
+    "gold": "C. 600 nm",
+    "question": "White light is normally incident on a puddle of water (index of refraction 1.33). A thin (500 nm) layer of oil (index of refraction 1.5) floats on the surface of the puddle. Of the following, the most strongly reflected wavelength is"
+  }
+]

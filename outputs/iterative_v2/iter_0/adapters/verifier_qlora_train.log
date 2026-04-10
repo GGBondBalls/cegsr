@@ -1,0 +1,33 @@
+/root/miniconda3/lib/python3.12/site-packages/jieba/_compat.py:18: UserWarning: pkg_resources is deprecated as an API. See https://setuptools.pypa.io/en/latest/pkg_resources.html. The pkg_resources package is slated for removal as early as 2025-11-30. Refrain from using this package or pin to Setuptools<81.
+  import pkg_resources
+Traceback (most recent call last):
+  File "/root/miniconda3/bin/llamafactory-cli", line 8, in <module>
+    sys.exit(main())
+             ^^^^^^
+  File "/root/miniconda3/lib/python3.12/site-packages/llamafactory/cli.py", line 24, in main
+    launcher.launch()
+  File "/root/miniconda3/lib/python3.12/site-packages/llamafactory/launcher.py", line 157, in launch
+    run_exp()
+  File "/root/miniconda3/lib/python3.12/site-packages/llamafactory/train/tuner.py", line 126, in run_exp
+    _training_function(config={"args": args, "callbacks": callbacks})
+  File "/root/miniconda3/lib/python3.12/site-packages/llamafactory/train/tuner.py", line 55, in _training_function
+    model_args, data_args, training_args, finetuning_args, generating_args = get_train_args(args)
+                                                                             ^^^^^^^^^^^^^^^^^^^^
+  File "/root/miniconda3/lib/python3.12/site-packages/llamafactory/hparams/parser.py", line 257, in get_train_args
+    model_args, data_args, training_args, finetuning_args, generating_args = _parse_train_args(args)
+                                                                             ^^^^^^^^^^^^^^^^^^^^^^^
+  File "/root/miniconda3/lib/python3.12/site-packages/llamafactory/hparams/parser.py", line 211, in _parse_train_args
+    return _parse_args(parser, args, allow_extra_keys=allow_extra_keys)
+           ^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^
+  File "/root/miniconda3/lib/python3.12/site-packages/llamafactory/hparams/parser.py", line 90, in _parse_args
+    return parser.parse_dict(args, allow_extra_keys=allow_extra_keys)
+           ^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^
+  File "/root/miniconda3/lib/python3.12/site-packages/transformers/hf_argparser.py", line 380, in parse_dict
+    obj = dtype(**inputs)
+          ^^^^^^^^^^^^^^^
+  File "<string>", line 147, in __init__
+  File "/root/miniconda3/lib/python3.12/site-packages/llamafactory/hparams/training_args.py", line 105, in __post_init__
+    BaseTrainingArguments.__post_init__(self)
+  File "/root/miniconda3/lib/python3.12/site-packages/transformers/training_args.py", line 1747, in __post_init__
+    raise ValueError(error_message)
+ValueError: Your setup doesn't support bf16/gpu.
