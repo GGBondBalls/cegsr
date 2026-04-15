@@ -1,0 +1,142 @@
+[
+  {
+    "sample_id": "college_physics_test_0",
+    "dataset_name": "college_physics",
+    "pred": "A. 1.00063.",
+    "gold": "B. 1.00032",
+    "question": "A gas cell with an optical path length of 10 cm is placed in one arm of a Michelson interferometer. If the light source for the interferometer is a laser with wavelength 632.2 nm, then 100 fringes are counted as the gas cell is evacuated. What is the index of refraction of the original gas?"
+  },
+  {
+    "sample_id": "college_physics_test_1",
+    "dataset_name": "college_physics",
+    "pred": "C. 4k.",
+    "gold": "D. 8k",
+    "question": "A spring of force constant k is stretched a certain distance. It takes twice as much work to stretch a second spring by half this distance. The force constant of the second spring is"
+  },
+  {
+    "sample_id": "college_physics_test_3",
+    "dataset_name": "college_physics",
+    "pred": "B. mc/(2^(1/2))",
+    "gold": "D. (3^(1/2))mc",
+    "question": "If the total energy of a particle of mass m is equal to twice its rest energy, then the magnitude of the particle’s relativistic momentum is"
+  },
+  {
+    "sample_id": "college_physics_test_4",
+    "dataset_name": "college_physics",
+    "pred": "D. 54.4 eV",
+    "gold": "A. 24.6 eV",
+    "question": "The energy required to remove both electrons from the helium atom in its ground state is 79.0 eV. How much energy is required to ionize helium (i.e., to remove one electron)?"
+  },
+  {
+    "sample_id": "college_physics_test_6",
+    "dataset_name": "college_physics",
+    "pred": "B. 550 nm.",
+    "gold": "C. 600 nm",
+    "question": "White light is normally incident on a puddle of water (index of refraction 1.33). A thin (500 nm) layer of oil (index of refraction 1.5) floats on the surface of the puddle. Of the following, the most strongly reflected wavelength is"
+  },
+  {
+    "sample_id": "college_physics_test_9",
+    "dataset_name": "college_physics",
+    "pred": "C. 10 mm",
+    "gold": "A. 10:00 PM",
+    "question": "The surface of the Sun has a temperature close to 6,000 K and it emits a blackbody (Planck) spectrum that reaches a maximum near 500 nm. For a body with a surface temperature close to 300 K, at what wavelength would the thermal spectrum reach a maximum?"
+  },
+  {
+    "sample_id": "college_physics_test_12",
+    "dataset_name": "college_physics",
+    "pred": "C. 1,100 J",
+    "gold": "B. 1,000 J",
+    "question": "A heat pump is to extract heat from an outdoor environment at 7°C and heat the environment indoors to 27°C. For each 15,000 J of heat delivered indoors, the smallest amount of work that must be supplied to the heat pump is approximately"
+  },
+  {
+    "sample_id": "college_physics_test_23",
+    "dataset_name": "college_physics",
+    "pred": "A. 2",
+    "gold": "D. 10",
+    "question": "An atom has filled n = 1 and n = 2 levels. How many electrons does the atom have?"
+  },
+  {
+    "sample_id": "college_physics_test_30",
+    "dataset_name": "college_physics",
+    "pred": "B. 0.15c",
+    "gold": "C. 0.36c",
+    "question": "An observer O at rest midway between two sources of light at x = 0 and x = 10 m observes the two sources to flash simultaneously. According to a second observer O', moving at a constant speed parallel to the x-axis, one source of light flashes 13 ns before the other. Which of the following gives the speed of O' relative to O?"
+  },
+  {
+    "sample_id": "college_physics_test_33",
+    "dataset_name": "college_physics",
+    "pred": "B. 0.2 GeV/c².",
+    "gold": "D. 1.0 GeV/c^2",
+    "question": "The rest mass of a particle with total energy 5.0 GeV and momentum 4.9 GeV/c is approximately"
+  },
+  {
+    "sample_id": "college_physics_test_36",
+    "dataset_name": "college_physics",
+    "pred": "B. 2/3 c",
+    "gold": "D. 10/11 c",
+    "question": "A tube of water is traveling at 1/2 c relative to the lab frame when a beam of light traveling in the same direction as the tube enters it. What is the speed of light in the water relative to the lab frame? (The index of refraction of water is 4/3.)"
+  },
+  {
+    "sample_id": "college_physics_test_38",
+    "dataset_name": "college_physics",
+    "pred": "B. 6.8 eV",
+    "gold": "A. 6.0 e",
+    "question": "Positronium is an atom formed by an electron and a positron (antielectron). It is similar to the hydrogen atom, with the positron replacing the proton. If a positronium atom makes a transition from the state with n=3 to a state with n=1, the energy of the photon emitted in this transition is closest to"
+  },
+  {
+    "sample_id": "college_physics_test_39",
+    "dataset_name": "college_physics",
+    "pred": "A. There are no changes in the internal energy of the system.",
+    "gold": "C. The entropy of the system and its environment remains unchanged.",
+    "question": "Which of the following is true about any system that undergoes a reversible thermodynamic process?"
+  },
+  {
+    "sample_id": "college_physics_test_42",
+    "dataset_name": "college_physics",
+    "pred": "B. rate of change of the magnetic flux through S.",
+    "gold": "D. rate of change of the electric flux through S",
+    "question": "By definition, the electric displacement current through a surface S is proportional to the"
+  },
+  {
+    "sample_id": "college_physics_test_44",
+    "dataset_name": "college_physics",
+    "pred": "A. 2",
+    "gold": "D. 16",
+    "question": "The energy from electromagnetic waves in equilibrium in a cavity is used to melt ice. If the Kelvin temperature of the cavity is increased by a factor of two, the mass of ice that can be melted in a fixed amount of time is increased by a factor of"
+  },
+  {
+    "sample_id": "college_physics_test_51",
+    "dataset_name": "college_physics",
+    "pred": "C. (3/2) k T",
+    "gold": "D. 3kT",
+    "question": "A three-dimensional harmonic oscillator is in thermal equilibrium with a temperature reservoir at temperature T. The average total energy of the oscillator is"
+  },
+  {
+    "sample_id": "college_physics_test_52",
+    "dataset_name": "college_physics",
+    "pred": "B. 594 Hz",
+    "gold": "D. 612 Hz",
+    "question": "The driver of a police car hears an echo of the car’s siren from a wall toward which the car is moving with a speed of 3.5 m/s. If the speed of sound is 350 m/s and the frequency of the siren is 600 Hz, the driver hears the echo at a frequency nearest to which of the following?"
+  },
+  {
+    "sample_id": "college_physics_test_53",
+    "dataset_name": "college_physics",
+    "pred": "B. 606 Hz",
+    "gold": "C. 612 Hz",
+    "question": "The driver of a police car hears an echo of the car’s siren from a wall toward which the car is moving with a speed of 3.5 m/s. If the speed of sound is 350 m/s and the frequency of the siren is 600 Hz, the driver hears the echo at a frequency nearest to which of the following?"
+  },
+  {
+    "sample_id": "college_physics_test_54",
+    "dataset_name": "college_physics",
+    "pred": "A. There are no changes in the internal energy of the system.",
+    "gold": "C. The entropy of the system and its environment remains unchanged.",
+    "question": "Which of the following is true about any system that undergoes a reversible thermodynamic process?"
+  },
+  {
+    "sample_id": "college_physics_test_56",
+    "dataset_name": "college_physics",
+    "pred": "D. Nuclear hyperfine coupling",
+    "gold": "B. The Pauli exclusion principle",
+    "question": "Excited states of the helium atom can be characterized as para- (antiparallel electron spins) and ortho- (parallel electron spins). The observation that an ortho- state has lower energy than the corresponding para- state can be understood in terms of which of the following?"
+  }
+]

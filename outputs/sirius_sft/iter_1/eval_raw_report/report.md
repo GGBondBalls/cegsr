@@ -1,0 +1,72 @@
+# Run Summary
+
+## Aggregate Metrics
+- **num_episodes**: 700
+- **accuracy**: 0.7514
+- **exact_match**: 0.1971
+- **mcq_accuracy**: 0.6471
+- **repair_coverage**: 0.0
+- **repair_success_rate**: 0.0
+- **num_changed_repairs**: 0
+- **average_trajectory_length**: 4.0
+- **average_input_tokens**: 1728.6771
+- **average_output_tokens**: 338.9343
+- **retrieval_hit_usefulness_proxy**: 0.0
+- **graph_num_nodes**: 0
+- **graph_num_edges**: 0
+- **training_data_size_by_role::planner**: 700
+- **training_data_size_by_role::solver**: 700
+- **training_data_size_by_role::verifier**: 700
+- **training_data_size_by_role::summarizer**: 700
+- **dataset_accuracy::college_physics**: 0.68
+- **dataset_count::college_physics**: 100
+- **dataset_accuracy::college_chemistry**: 0.48
+- **dataset_count::college_chemistry**: 100
+- **dataset_accuracy::pubmed_qa**: 0.8
+- **dataset_count::pubmed_qa**: 100
+- **dataset_accuracy::gsm8k**: 0.73
+- **dataset_count::gsm8k**: 100
+- **dataset_accuracy::commonsense_qa**: 0.82
+- **dataset_count::commonsense_qa**: 100
+- **dataset_accuracy::ai2_arc**: 0.89
+- **dataset_count::ai2_arc**: 100
+- **dataset_accuracy::boolq**: 0.86
+- **dataset_count::boolq**: 100
+- **category_accuracy::college_physics**: 0.68
+- **category_accuracy::college_chemistry**: 0.48
+- **category_accuracy::biomedical_qa**: 0.8
+- **category_accuracy::math_word_problem**: 0.73
+- **category_accuracy::commonsense**: 0.82
+- **category_accuracy::science_mcq**: 0.89
+- **category_accuracy::reading_comprehension_yesno**: 0.86
+
+## Dataset Breakdown
+- college_physics: 0.68
+- college_chemistry: 0.48
+- pubmed_qa: 0.8
+- gsm8k: 0.73
+- commonsense_qa: 0.82
+- ai2_arc: 0.89
+- boolq: 0.86
+
+## Error Cases
+- sample_id=college_physics_test_0 | dataset=college_physics | pred=A. 1.00063 | gold=B. 1.00032
+- sample_id=college_physics_test_1 | dataset=college_physics | pred=C. 4k | gold=D. 8k
+- sample_id=college_physics_test_3 | dataset=college_physics | pred=B. mc/(2^(1/2)) | gold=D. (3^(1/2))mc
+- sample_id=college_physics_test_4 | dataset=college_physics | pred=B. 39.5 eV | gold=A. 24.6 eV
+- sample_id=college_physics_test_5 | dataset=college_physics | pred=B. 288 m | gold=D. 450 m
+- sample_id=college_physics_test_6 | dataset=college_physics | pred=A. 500 nm. | gold=C. 600 nm
+- sample_id=college_physics_test_9 | dataset=college_physics | pred=D. 100 mm | gold=A. 10:00 PM
+- sample_id=college_physics_test_11 | dataset=college_physics | pred=B. hexagon. | gold=D. tetrahedron
+- sample_id=college_physics_test_12 | dataset=college_physics | pred=C. 1,100 J. | gold=B. 1,000 J
+- sample_id=college_physics_test_19 | dataset=college_physics | pred=A. 150 nm | gold=B. 200 nm
+- sample_id=college_physics_test_30 | dataset=college_physics | pred=B. 0.15c. | gold=C. 0.36c
+- sample_id=college_physics_test_33 | dataset=college_physics | pred=B. 0.2 GeV/c^2 | gold=D. 1.0 GeV/c^2
+- sample_id=college_physics_test_38 | dataset=college_physics | pred=B. 6.8 eV | gold=A. 6.0 e
+- sample_id=college_physics_test_39 | dataset=college_physics | pred=A. There are no changes in the internal energy of the system. | gold=C. The entropy of the system and its environment remains unchanged.
+- sample_id=college_physics_test_47 | dataset=college_physics | pred=D. two times as distant as they are today | gold=A. one-quarter as distant as they are today
+- sample_id=college_physics_test_52 | dataset=college_physics | pred=B. 594 Hz. | gold=D. 612 Hz
+- sample_id=college_physics_test_53 | dataset=college_physics | pred=B. 606 Hz | gold=C. 612 Hz
+- sample_id=college_physics_test_54 | dataset=college_physics | pred=A. There are no changes in the internal energy of the system. | gold=C. The entropy of the system and its environment remains unchanged.
+- sample_id=college_physics_test_61 | dataset=college_physics | pred=B. V_0/3 | gold=D. 2V_0/3
+- sample_id=college_physics_test_63 | dataset=college_physics | pred=B. 2mc^2 | gold=D. 4mc^2

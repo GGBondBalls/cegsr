@@ -1,0 +1,6 @@
+{
+  "planner": "outputs/sirius_sft/iter_3/training_data_merged/planner_sft.jsonl",
+  "solver": "outputs/sirius_sft/iter_3/training_data_merged/solver_sft.jsonl",
+  "verifier": "outputs/sirius_sft/iter_3/training_data_merged/verifier_sft.jsonl",
+  "summarizer": "outputs/sirius_sft/iter_3/training_data_merged/summarizer_sft.jsonl"
+}

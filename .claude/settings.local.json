@@ -23,7 +23,10 @@
       "WebFetch(domain:raw.githubusercontent.com)",
       "Bash(pip show:*)",
       "Bash(python:*)",
-      "Bash(PYTHONPATH=src python:*)"
+      "Bash(PYTHONPATH=src python:*)",
+      "Bash(awk 'NR<=5 || NR>=64' C:/Users/Lenovo/Desktop/cegsr/4110.log)",
+      "Bash(ls -la C:/Users/Lenovo/Desktop/cegsr/*.log)",
+      "Bash(ls -la C:/Users/Lenovo/Desktop/cegsr/outputs/iterative_v2/iter_0/adapters/*.log)"
     ]
   }
 }

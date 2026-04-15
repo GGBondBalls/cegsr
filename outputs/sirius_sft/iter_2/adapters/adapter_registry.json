@@ -1,0 +1,6 @@
+{
+  "planner": "outputs/sirius_sft/iter_2/adapters/planner_qlora",
+  "solver": "outputs/sirius_sft/iter_2/adapters/solver_qlora",
+  "verifier": "outputs/sirius_sft/iter_2/adapters/verifier_qlora",
+  "summarizer": "outputs/sirius_sft/iter_2/adapters/summarizer_qlora"
+}

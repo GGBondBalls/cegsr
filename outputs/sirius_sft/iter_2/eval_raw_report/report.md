@@ -1,0 +1,72 @@
+# Run Summary
+
+## Aggregate Metrics
+- **num_episodes**: 700
+- **accuracy**: 0.7357
+- **exact_match**: 0.2043
+- **mcq_accuracy**: 0.64
+- **repair_coverage**: 0.0
+- **repair_success_rate**: 0.0
+- **num_changed_repairs**: 0
+- **average_trajectory_length**: 4.0
+- **average_input_tokens**: 1727.4129
+- **average_output_tokens**: 337.7457
+- **retrieval_hit_usefulness_proxy**: 0.0
+- **graph_num_nodes**: 0
+- **graph_num_edges**: 0
+- **training_data_size_by_role::planner**: 700
+- **training_data_size_by_role::solver**: 700
+- **training_data_size_by_role::verifier**: 700
+- **training_data_size_by_role::summarizer**: 700
+- **dataset_accuracy::college_physics**: 0.67
+- **dataset_count::college_physics**: 100
+- **dataset_accuracy::college_chemistry**: 0.49
+- **dataset_count::college_chemistry**: 100
+- **dataset_accuracy::pubmed_qa**: 0.8
+- **dataset_count::pubmed_qa**: 100
+- **dataset_accuracy::gsm8k**: 0.67
+- **dataset_count::gsm8k**: 100
+- **dataset_accuracy::commonsense_qa**: 0.87
+- **dataset_count::commonsense_qa**: 100
+- **dataset_accuracy::ai2_arc**: 0.84
+- **dataset_count::ai2_arc**: 100
+- **dataset_accuracy::boolq**: 0.81
+- **dataset_count::boolq**: 100
+- **category_accuracy::college_physics**: 0.67
+- **category_accuracy::college_chemistry**: 0.49
+- **category_accuracy::biomedical_qa**: 0.8
+- **category_accuracy::math_word_problem**: 0.67
+- **category_accuracy::commonsense**: 0.87
+- **category_accuracy::science_mcq**: 0.84
+- **category_accuracy::reading_comprehension_yesno**: 0.81
+
+## Dataset Breakdown
+- college_physics: 0.67
+- college_chemistry: 0.49
+- pubmed_qa: 0.8
+- gsm8k: 0.67
+- commonsense_qa: 0.87
+- ai2_arc: 0.84
+- boolq: 0.81
+
+## Error Cases
+- sample_id=college_physics_test_0 | dataset=college_physics | pred=A. 1.00063 | gold=B. 1.00032
+- sample_id=college_physics_test_1 | dataset=college_physics | pred=C. 4k. | gold=D. 8k
+- sample_id=college_physics_test_3 | dataset=college_physics | pred=B. mc/(2^(1/2)) | gold=D. (3^(1/2))mc
+- sample_id=college_physics_test_4 | dataset=college_physics | pred=D. 54.4 eV. | gold=A. 24.6 eV
+- sample_id=college_physics_test_6 | dataset=college_physics | pred=A. 500 nm | gold=C. 600 nm
+- sample_id=college_physics_test_9 | dataset=college_physics | pred=B. 100 Pm | gold=A. 10:00 PM
+- sample_id=college_physics_test_10 | dataset=college_physics | pred=B. 0.1 V | gold=D. 10 V
+- sample_id=college_physics_test_12 | dataset=college_physics | pred=C. 1,100 J | gold=B. 1,000 J
+- sample_id=college_physics_test_14 | dataset=college_physics | pred=D. 60° | gold=C. 45°
+- sample_id=college_physics_test_30 | dataset=college_physics | pred=B. 0.15c. | gold=C. 0.36c
+- sample_id=college_physics_test_33 | dataset=college_physics | pred=A. 0.1 GeV/c^2 | gold=D. 1.0 GeV/c^2
+- sample_id=college_physics_test_35 | dataset=college_physics | pred=B. 100,000 J | gold=C. 1,000,000 J
+- sample_id=college_physics_test_36 | dataset=college_physics | pred=C. 5/6 c | gold=D. 10/11 c
+- sample_id=college_physics_test_38 | dataset=college_physics | pred=B. 6.8 eV | gold=A. 6.0 e
+- sample_id=college_physics_test_42 | dataset=college_physics | pred=B. Rate of change of the magnetic flux through S. | gold=D. rate of change of the electric flux through S
+- sample_id=college_physics_test_44 | dataset=college_physics | pred=A. 2 | gold=D. 16
+- sample_id=college_physics_test_47 | dataset=college_physics | pred=D. two times as distant as they are today | gold=A. one-quarter as distant as they are today
+- sample_id=college_physics_test_50 | dataset=college_physics | pred=D. 1.25mc^2 | gold=A. 0.25mc^2
+- sample_id=college_physics_test_51 | dataset=college_physics | pred=C. (3/2) k T | gold=D. 3kT
+- sample_id=college_physics_test_52 | dataset=college_physics | pred=B. 594 Hz. | gold=D. 612 Hz

@@ -26,6 +26,43 @@ def _find_llamafactory_cli() -> str:
     return f'{sys.executable} -m llamafactory'
 
 
+def detect_gpu_compute_dtype() -> dict[str, bool]:
+    """Detect whether the current GPU supports bf16 / fp16.
+
+    bf16 requires Ampere (sm_80) or newer. Pre-Ampere cards (V100 sm_70,
+    T4 sm_75) must fall back to fp16 or the transformers bf16 check raises
+    ``ValueError: Your setup doesn't support bf16/gpu.`` at training start.
+    """
+    try:
+        import torch
+        if not torch.cuda.is_available():
+            return {'bf16': False, 'fp16': False, 'device_name': 'cpu'}
+        major, _ = torch.cuda.get_device_capability()
+        name = torch.cuda.get_device_name(0)
+        return {'bf16': major >= 8, 'fp16': True, 'device_name': name}
+    except Exception as exc:  # pragma: no cover - defensive
+        logger.warning('GPU capability probe failed: %s — assuming fp16 only', exc)
+        return {'bf16': False, 'fp16': True, 'device_name': 'unknown'}
+
+
+def _resolve_precision_flags(user_bf16: bool) -> dict[str, bool]:
+    """Decide whether to emit ``bf16`` or ``fp16`` in the LLaMA-Factory YAML."""
+    caps = detect_gpu_compute_dtype()
+    if user_bf16 and caps['bf16']:
+        return {'bf16': True}
+    if user_bf16 and caps['fp16']:
+        logger.warning(
+            'bf16 requested but GPU (%s) lacks Ampere support — falling back to fp16.',
+            caps['device_name'],
+        )
+        return {'fp16': True}
+    if caps['fp16']:
+        return {'fp16': True}
+    logger.warning('Neither bf16 nor fp16 detected (device=%s) — training in fp32.',
+                   caps['device_name'])
+    return {}
+
+
 def run_llamafactory_train(config_path: str | Path, log_file: str | Path | None = None) -> int:
     """Execute a single LLaMA-Factory training run.
 
@@ -113,10 +150,10 @@ def generate_sft_config(
         'warmup_ratio': warmup_ratio,
         'logging_steps': logging_steps,
         'save_strategy': save_strategy,
-        'bf16': bf16,
         'report_to': 'none',
         'overwrite_output_dir': True,
     }
+    cfg.update(_resolve_precision_flags(bf16))
     if quantization_bit is not None:
         cfg['quantization_bit'] = quantization_bit
         cfg['quantization_method'] = 'bitsandbytes'
@@ -166,10 +203,10 @@ def generate_dpo_config(
         'learning_rate': learning_rate,
         'num_train_epochs': num_train_epochs,
         'dpo_beta': dpo_beta,
-        'bf16': bf16,
         'report_to': 'none',
         'overwrite_output_dir': True,
     }
+    cfg.update(_resolve_precision_flags(bf16))
     if quantization_bit is not None:
         cfg['quantization_bit'] = quantization_bit
         cfg['quantization_method'] = 'bitsandbytes'
@@ -250,8 +287,13 @@ def train_role_sft(
         log_path = adapters_base / f'{role}_{training_mode}_train.log'
         rc = run_llamafactory_train(cfg_path, log_file=log_path)
         if rc != 0:
-            logger.error('Training failed for role=%s (rc=%d). Check log: %s', role, rc, log_path)
-            continue
+            msg = (
+                f'Training failed for role={role} (rc={rc}). Check log: {log_path}. '
+                f'Common causes: (1) GPU lacks bf16/fp16 support, '
+                f'(2) CUDA OOM, (3) inference backend still holds GPU memory.'
+            )
+            logger.error(msg)
+            raise RuntimeError(msg)
 
         adapter_paths[role] = adapter_out
         logger.info('Adapter saved: %s → %s', role, adapter_out)

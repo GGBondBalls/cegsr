@@ -516,14 +516,27 @@ def export_credit_guided_training_data(
 
 
 def _free_gpu_memory() -> None:
-    """Force garbage collection and release GPU memory."""
+    """Force garbage collection and release GPU memory.
+
+    Calls gc twice with an empty_cache sandwich — a single gc pass often leaves
+    tensor buffers alive because their owning objects hold weak refs cleared
+    only on the next cycle. This matters before spawning a LLaMA-Factory
+    training subprocess on a single-card box.
+    """
     import gc
-    gc.collect()
+    for _ in range(2):
+        gc.collect()
     try:
         import torch
         if torch.cuda.is_available():
             torch.cuda.empty_cache()
             torch.cuda.synchronize()
+            try:
+                free_b, total_b = torch.cuda.mem_get_info()
+                logger.info('GPU mem after release: free=%.1fGB / total=%.1fGB',
+                            free_b / 1e9, total_b / 1e9)
+            except Exception:
+                pass
     except ImportError:
         pass
 
